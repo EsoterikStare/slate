@@ -70,16 +70,20 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
   viewport.
 
 ### Screen layout
-- **Top area:** pinned to the top and only as tall as its content. Clock and date
-  on the left, current conditions on the right (icon, temperature, condition,
-  high/low), and a full-width forecast strip underneath (N days, configurable,
-  limited to what the entity provides).
-- **Calendar:** pinned to the bottom, full width, only as tall as its content,
-  growing upward.
-- **Middle:** the background image shows through the open space between the
-  two. A quiet week leaves a big window onto the photo, a busy week a small one.
-- When the two meet, the open space shrinks to a minimum gap, then the forecast
-  strip collapses, then calendar overflow kicks in (below).
+- **One block, anchored to the bottom** (changed 2026-10-19; it was originally
+  top area pinned to the top and calendar to the bottom, with the photo in
+  between). The clock, date and weather sit directly on top of the calendar,
+  separated by `gap` (default 24px), and the whole block is only as tall as its
+  content.
+- **Top rows:** clock and date on the left, current conditions on the right
+  (icon, temperature, condition, high/low), and a full-width forecast strip
+  underneath (N days, configurable, limited to what the entity provides).
+- **Calendar:** full width at the bottom, growing upward and pushing the top
+  rows up with it.
+- **Above the block:** the background photo. A quiet week leaves a big window
+  onto the photo, a busy week a small one.
+- When the block would outgrow the screen, the forecast strip collapses first,
+  then calendar overflow kicks in (below).
 
 ### Calendar
 - **Rows:** `weeks` (default 3) rows of 7 days, starting on `firstDay` (`sunday` |
@@ -103,8 +107,7 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
 - **Empty days:** blank by default. A "No events" placeholder is optional.
 - **Row height:** each week row is as tall as its busiest day needs.
 - **Overflow** (when everything doesn't fit):
-  1. Close the open middle space down to a minimum gap, then collapse the
-     forecast strip.
+  1. Collapse the forecast strip.
   2. Collapse rows starting from the **furthest-future week** and working back
      toward the current week. Each day is cut down to what fits, but never below
      `minEventsPerDay` (default 2).
@@ -159,7 +162,7 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
 ### wall-layout (as built)
 - `top:` is a list of rows; a row is either a list of cards (side by side,
   spread to the edges) or `{ cards, collapsible: true }`. `bottom:` is one
-  card. `background:`, `night:`, `scale:`, `padding:`, `min_gap:` and
+  card. `background:`, `night:`, `scale:`, `padding:`, `gap:` and
   `reload_after:` sit alongside them.
 - Child cards are created with HA's own `loadCardHelpers()` inside HA, so any
   card type works in a row, not only ours.

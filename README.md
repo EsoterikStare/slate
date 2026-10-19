@@ -1,12 +1,13 @@
 # Wall Cards
 
 Custom Home Assistant dashboard cards for a portrait, wall-mounted kiosk: a
-week-row calendar anchored to the bottom of the screen, clock, date and
-weather at the top, and a rotating photo showing through in between.
+week-row calendar anchored to the bottom of the screen with the clock, date
+and weather sitting on top of it, and a rotating photo filling the space
+above.
 
 | Card | What it does |
 | --- | --- |
-| `custom:wall-layout` | Full-screen composition: background, top rows, bottom card, night dimming, reload watchdog |
+| `custom:wall-layout` | Full-screen composition: background, top rows stacked on a bottom card, night dimming, reload watchdog |
 | `custom:wall-calendar` | Week rows that grow upward with the busiest day; collapses far-future weeks to fit |
 | `custom:wall-clock` | Large time and date |
 | `custom:wall-weather` | Current conditions and/or a daily forecast strip, with animated Meteocons |
@@ -45,6 +46,7 @@ views:
           end: "06:00"
           brightness: 0.3
         reload_after: 300              # seconds offline before reloading the page
+        gap: 24                        # px between the weather and the calendar
         top:
           - - type: custom:wall-clock
               time_format: 12

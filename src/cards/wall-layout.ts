@@ -1,7 +1,8 @@
 // <wall-layout>: the full-screen kiosk composition. A background photo fills
-// the screen; top rows (clock, weather) hug the top edge and the bottom card
-// (calendar) hugs the bottom edge, each only as tall as its content, with the
-// photo showing through between them. The split itself is planScreen().
+// the screen; the top rows (clock, weather) sit directly on the bottom card
+// (calendar), and that whole block is anchored to the bottom edge and only
+// as tall as its content, so the photo shows above it. How the height is
+// shared when it runs short is planScreen().
 // Also handles night dimming and a reload watchdog for a dropped HA
 // connection, since nobody is there to press F5.
 
@@ -33,8 +34,8 @@ export interface WallLayoutConfig {
   scale?: number;
   /** Outer padding, px. */
   padding?: number;
-  /** Smallest space kept between the top rows and the bottom card, px. */
-  min_gap?: number;
+  /** Space between the top rows and the bottom card, px. */
+  gap?: number;
   background?: BackgroundConfig & { fade_seconds?: number };
   night?: { start: string; end: string; brightness?: number };
   /** Reload the page after the HA connection has been down this many seconds. `false` disables. */
@@ -215,8 +216,9 @@ export class WallLayout extends LitElement {
     if (typeof ResizeObserver !== 'undefined') {
       this._resize = new ResizeObserver(() => this._relayout());
       this._resize.observe(this);
-      const top = this.renderRoot.querySelector('.top');
-      if (top) this._resize.observe(top);
+      // The stack resizes whenever a row or the bottom card does.
+      const stack = this.renderRoot.querySelector('.stack');
+      if (stack) this._resize.observe(stack);
     }
   }
 
@@ -246,7 +248,7 @@ export class WallLayout extends LitElement {
     const visible = this._rows.map((r, i) => ({ h: m.rowHeights[i] ?? 0, keep: !r.row.collapsible }));
     const plan = planScreen({
       height: m.height,
-      minGap: this._config.min_gap ?? 24,
+      gap: this._config.gap ?? 24,
       topFull: visible.reduce((s, r) => s + r.h, 0) + gaps(visible.length),
       topCompact: visible.filter((r) => r.keep).reduce((s, r) => s + r.h, 0) + gaps(visible.filter((r) => r.keep).length),
       bottomNatural: m.bottomNatural,
@@ -268,17 +270,22 @@ export class WallLayout extends LitElement {
         '--wall-unit': this._unit ? `${this._unit}px` : null,
         '--wall-scale': String(cfg.scale ?? 1),
         '--pad': pad,
+        '--gap': `${cfg.gap ?? 24}px`,
       })}
     >
       ${this._background ?? nothing}
-      <div class="top">
-        ${this._rows.map(
-          (r) => html`<div class=${classMap({ row: true, collapsed: !!r.row.collapsible && this._collapsed })}>
-            ${r.cards}
-          </div>`,
-        )}
+      <div class="stack">
+        ${this._rows.length
+          ? html`<div class="top">
+              ${this._rows.map(
+                (r) => html`<div class=${classMap({ row: true, collapsed: !!r.row.collapsible && this._collapsed })}>
+                  ${r.cards}
+                </div>`,
+              )}
+            </div>`
+          : nothing}
+        ${this._bottom ? html`<div class="bottom">${this._bottom}</div>` : nothing}
       </div>
-      <div class="bottom">${this._bottom ?? nothing}</div>
       <div class="dim" style=${styleMap({ opacity: this._night ? String(1 - brightness) : '0' })}></div>
     </div>`;
   }
@@ -293,20 +300,21 @@ export class WallLayout extends LitElement {
       overflow: hidden;
       box-sizing: border-box;
     }
-    .top,
-    .bottom {
+    /* Top rows sit directly on the bottom card; the block hugs the bottom edge. */
+    .stack {
       position: absolute;
       left: var(--pad);
       right: var(--pad);
+      bottom: var(--pad);
+      display: flex;
+      flex-direction: column;
+      row-gap: var(--gap);
     }
     .top {
-      top: var(--pad);
+      position: relative;
       display: flex;
       flex-direction: column;
       row-gap: 16px;
-    }
-    .bottom {
-      bottom: var(--pad);
     }
     .row {
       display: flex;

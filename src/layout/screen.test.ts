@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { planScreen } from './screen';
 
-const base = { height: 1900, minGap: 20, topFull: 500, topCompact: 300 };
+const base = { height: 1900, gap: 20, topFull: 500, topCompact: 300 };
 
 describe('planScreen', () => {
   it('keeps the full top area when the calendar fits beneath it', () => {
     expect(planScreen({ ...base, bottomNatural: 1380 })).toEqual({ collapseTop: false, bottomAvailable: 1380 });
   });
 
-  it('collapses the top area once the calendar would crowd past the minimum gap', () => {
+  it('collapses the top area once the whole block would outgrow the screen', () => {
     expect(planScreen({ ...base, bottomNatural: 1381 })).toEqual({ collapseTop: true, bottomAvailable: 1580 });
   });
 
