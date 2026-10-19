@@ -11,6 +11,12 @@ export default defineConfig({
     outDir: 'dist',
     target: 'es2022',
   },
+  server: {
+    // For the "live dev dashboard": HA (another origin on the LAN) loads
+    // http://<this-pc>:5173/src/index.ts as a module, which needs CORS.
+    // Dev server only; `pnpm dev` already listens on the LAN via --host.
+    cors: true,
+  },
   test: {
     environment: 'happy-dom',
     include: ['src/**/*.test.ts'],

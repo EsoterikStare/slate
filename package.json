@@ -12,7 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "deploy:dev": "vite build && node scripts/deploy-dev.mjs"
   },
   "dependencies": {
     "lit": "3.3.3"

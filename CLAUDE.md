@@ -10,6 +10,7 @@ Read it before changing behaviour; record new decisions there.
 - `pnpm typecheck` — `tsc --noEmit`
 - `pnpm build` — single ES module at `dist/wall-cards.js` (what HA loads)
 - `pnpm storybook` — component gallery at http://127.0.0.1:6006
+- `pnpm deploy:dev` — build and copy to HA over the Samba share (see README)
 
 ## Structure
 
