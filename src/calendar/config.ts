@@ -31,6 +31,8 @@ export interface WallCalendarConfig {
   show_legend?: boolean;
   /** Lines an event title may wrap to before it's cut off with an ellipsis. */
   title_lines?: number;
+  /** Show the month's short name ("Nov") instead of "1" on the first of a month. */
+  month_on_first?: boolean;
   /** Minutes between refetches, on top of refetching whenever a calendar changes. */
   refresh_interval?: number;
   scale?: number;
@@ -49,6 +51,7 @@ export interface ResolvedCalendarConfig {
   relativeDayNames: boolean;
   showLegend: boolean;
   titleLines: number;
+  monthOnFirst: boolean;
   refreshMinutes: number;
   scale: number;
   text: Partial<Record<CalendarTextRole, number>>;
@@ -98,6 +101,7 @@ export function resolveConfig(config: WallCalendarConfig): ResolvedCalendarConfi
     relativeDayNames: config.relative_day_names ?? false,
     showLegend: config.show_legend ?? true,
     titleLines,
+    monthOnFirst: config.month_on_first ?? true,
     refreshMinutes: Math.max(1, config.refresh_interval ?? 5),
     scale: config.scale ?? 1,
     text: config.text ?? {},

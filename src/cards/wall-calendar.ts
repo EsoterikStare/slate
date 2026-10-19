@@ -243,9 +243,13 @@ export class WallCalendar extends LitElement {
     return e.calendars.map((c) => byEntity.get(c) ?? 'grey');
   }
 
-  /** "Nov" on the 1st of a month, otherwise the day number. */
+  private _isMonthLabel(day: Date): boolean {
+    return this._config!.monthOnFirst && day.getDate() === 1;
+  }
+
+  /** "Nov" on the 1st of a month (unless turned off), otherwise the day number. */
   private _dateLabel(day: Date): string {
-    if (day.getDate() !== 1) return String(day.getDate());
+    if (!this._isMonthLabel(day)) return String(day.getDate());
     return day.toLocaleDateString(this.hass?.locale.language ?? 'en', { month: 'short' });
   }
 
@@ -270,7 +274,7 @@ export class WallCalendar extends LitElement {
           style=${styleMap({ gridColumn: `${col + 1}` })}
         >
           ${isFirst ? html`<div class="weekday">${this._weekdayLabel(day)}</div>` : nothing}
-          <div class=${classMap({ num: true, today: offset === 0, month: day.getDate() === 1 })}>
+          <div class=${classMap({ num: true, today: offset === 0, month: this._isMonthLabel(day) })}>
             <span class="disc"><span class="digits">${this._dateLabel(day)}</span></span>
           </div>
         </div>`;

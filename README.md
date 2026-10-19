@@ -98,7 +98,8 @@ text: { event_title: 1.2, event_time: 0.9 }
 
 ### Other options
 
-- **wall-calendar:** `title_lines` (1–3, default 2), `time_format` (12/24),
+- **wall-calendar:** `title_lines` (1–3, default 2), `month_on_first` (show
+  "Nov" instead of "1" on the 1st; default on), `time_format` (12/24),
   `relative_day_names` (Today/Tomorrow), `show_legend`, `today_color`,
   `refresh_interval` (minutes).
 - **wall-clock:** `show_seconds`, `show_meridiem`, `show_date`, `date_format`

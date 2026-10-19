@@ -15,6 +15,7 @@ describe('resolveConfig', () => {
       relativeDayNames: false,
       showLegend: true,
       titleLines: 2,
+      monthOnFirst: true,
     });
   });
 

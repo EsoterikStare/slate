@@ -110,6 +110,13 @@ describe('wall-calendar', () => {
     expect(labels(2)[1]).toEqual(['2', false]);
   });
 
+  it('can show the plain "1" instead, with month_on_first off', async () => {
+    const { el } = await mount({}, { month_on_first: false });
+    const first = $$(el, '.rows > .row')[2]!.querySelector('.num')!;
+    expect(text(first)).toBe('1');
+    expect(first.classList.contains('month')).toBe(false);
+  });
+
   it('keeps the today highlight on a month label', async () => {
     vi.setSystemTime(new Date(2026, 10, 1, 9, 0)); // Sunday Nov 1
     const { el } = await mount({});
