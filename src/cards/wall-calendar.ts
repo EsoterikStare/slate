@@ -264,7 +264,9 @@ export class WallCalendar extends LitElement {
           style=${styleMap({ gridColumn: `${col + 1}` })}
         >
           ${isFirst ? html`<div class="weekday">${this._weekdayLabel(day)}</div>` : nothing}
-          <div class=${classMap({ num: true, today: offset === 0 })}><span>${day.getDate()}</span></div>
+          <div class=${classMap({ num: true, today: offset === 0 })}>
+            <span class="disc"><span class="digits">${day.getDate()}</span></span>
+          </div>
         </div>`;
       })}
       ${week.bars.filter((b) => b.lane < lanes).map((b) => this._renderBar(b))}
@@ -321,8 +323,13 @@ export class WallCalendar extends LitElement {
     return html`<div class="probe" aria-hidden="true">
       <div class="row">
         <div class="probe-cell">
-          <div class="head first"><div class="weekday">W</div><div class="num"><span>30</span></div></div>
-          <div class="head later"><div class="num"><span>30</span></div></div>
+          <div class="head first">
+            <div class="weekday">W</div>
+            <div class="num"><span class="disc"><span class="digits">30</span></span></div>
+          </div>
+          <div class="head later">
+            <div class="num"><span class="disc"><span class="digits">30</span></span></div>
+          </div>
           <div class="bar-slot"><div class="bar">X</div></div>
           <div class="slot sample"><div class="event"><div class="time">1</div><div class="title">X</div></div></div>
           <div class="more">+1 more</div>
@@ -393,17 +400,38 @@ export class WallCalendar extends LitElement {
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    /* Every date gets the same fixed circle (filled only for today), so
+       today's number sits exactly where its neighbours' do. */
     .num {
       ${roleFontSize('date_number', 3.6)}
-      line-height: 1.35;
+      display: flex;
+      justify-content: center;
+      line-height: 1;
     }
-    .num span {
-      display: inline-block;
-      min-width: 1.35em;
-      border-radius: 999px;
+    .disc {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 1.4em;
+      height: 1.4em;
+      border-radius: 50%;
     }
-    .num.today span {
+    .num.today .disc {
       background: var(--today-color);
+    }
+    /* Optical centring: trim the digits' box to cap height and baseline (where
+       the ink actually is) instead of the font's ascent/descent, which differ
+       per font and left the number ~1px high in Roboto, low in Segoe UI.
+       Proportional figures stop a "1" carrying a full digit's width, which
+       pulled "21"/"31" ~3px left. */
+    .digits {
+      display: block;
+      font-variant-numeric: proportional-nums lining-nums;
+    }
+    @supports (text-box: trim-both cap alphabetic) {
+      .digits {
+        text-box: trim-both cap alphabetic;
+      }
     }
     .past {
       opacity: var(--wall-past-opacity, 0.45);

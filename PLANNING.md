@@ -106,6 +106,15 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
 - **Past days:** `pastEvents: dim | hide` (default `dim`). This also applies to
   events earlier today that have already ended.
 - **Today:** a filled circle behind today's date number (configurable colour).
+  Every date has the same fixed-size circle (filled only for today), so
+  today's number never shifts relative to its neighbours or the weekday name.
+  Optical centring (2026-10-19): the digits' box is trimmed to cap height and
+  baseline (`text-box: trim-both cap alphabetic`) so the visible digits are
+  centred, rather than the font's line box. The line box was about 0.7px high
+  in Roboto and 1.3px low in Segoe UI, so no fixed offset could work for both.
+  Digits are proportional, because Roboto's default full-width digits pulled
+  "21"/"31" about 3px left. Older browsers without `text-box` fall back to
+  line-box centring.
 - **Day headers:** the weekday name appears only on the first row; every row shows
   a large date number. Real weekday names by default. An optional
   `relative_day_names: true` shows "Today" and "Tomorrow" instead.
