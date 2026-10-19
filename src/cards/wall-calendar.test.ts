@@ -158,6 +158,22 @@ describe('wall-calendar', () => {
     expect(text($$(el, '.rows > .row')[2]!.querySelector('.more')!)).toBe('+1 more');
   });
 
+  it('announces its uncollapsed height even while squeezed', async () => {
+    const busy = (d: number) => [9, 10, 11, 12].map((h) => ev(`E${d}-${h}`, at(d, h), at(d, h + 1)));
+    const metrics = { firstHeader: 30, header: 20, bar: 10, event: 20, more: 10, rowGap: 0, chrome: 40 };
+    const heights: number[] = [];
+    const listener = (e: Event) => heights.push((e as CustomEvent<number>).detail);
+    document.addEventListener('wall-natural-height', listener);
+    const { el } = await mount({ 'calendar.alex': busy(22) }, {}, (c) => {
+      c.metrics = metrics;
+      c.availableHeight = 100;
+    });
+    // 40 chrome + (30 + 4×20) + 20 + 20, regardless of the 100px it was given.
+    expect(el.naturalHeight).toBe(190);
+    expect(heights.at(-1)).toBe(190);
+    document.removeEventListener('wall-natural-height', listener);
+  });
+
   it('refetches when a calendar entity changes, but not on unrelated updates', async () => {
     const { el, hass } = await mount({});
     const before = hass.requests.length;

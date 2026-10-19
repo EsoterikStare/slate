@@ -153,6 +153,19 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
 ### Night mode
 - Scheduled dimming between configured hours, with animations paused while dimmed.
 - No content shifting.
+- Implemented as a black overlay at `1 − brightness` opacity (cheaper on the
+  Pi's GPU than a CSS `filter` over the whole screen), fading over 3s.
+
+### wall-layout (as built)
+- `top:` is a list of rows; a row is either a list of cards (side by side,
+  spread to the edges) or `{ cards, collapsible: true }`. `bottom:` is one
+  card. `background:`, `night:`, `scale:`, `padding:`, `min_gap:` and
+  `reload_after:` sit alongside them.
+- Child cards are created with HA's own `loadCardHelpers()` inside HA, so any
+  card type works in a row, not only ours.
+- The calendar announces its uncollapsed height (`wall-natural-height`
+  event). The layout runs `planScreen()` and hands the calendar its
+  `availableHeight`.
 
 ### Kiosk
 - The Pi logs in automatically through HA's `trusted_networks` auth provider
@@ -160,8 +173,9 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
   the Pi). Earlier attempts reportedly stopped working after a while. If that
   happens again, suspect a changed IP, a reverse proxy hiding the Pi's IP, or the
   frontend stuck on "connection lost" after an HA restart.
-- **Watchdog:** reload the page if the HA connection has been down for longer than
-  a configurable timeout.
+- **Watchdog:** wall-layout reloads the page once HA's `hass.connected` has
+  been false for `reload_after` seconds (default 300, `false` disables),
+  counted from the first disconnect.
 - HA's header and sidebar are hidden by the Kiosk Mode HACS add-on, which is
   already installed.
 

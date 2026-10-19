@@ -51,6 +51,7 @@ const asUnit = (u: unknown): TempUnit => (u === '°C' || u === 'C' ? '°C' : '°
 export class WallWeather extends LitElement {
   static override properties = {
     hass: { attribute: false },
+    dimmed: { attribute: false },
     _config: { state: true },
     _forecast: { state: true },
     _forecastError: { state: true },
@@ -58,6 +59,8 @@ export class WallWeather extends LitElement {
   };
 
   declare hass?: HomeAssistant;
+  /** Set by wall-layout during night dimming: icons hold still. */
+  declare dimmed: boolean;
   declare _config?: WallWeatherConfig;
   declare _forecast?: ForecastEntry[];
   declare _forecastError: boolean;
@@ -71,6 +74,7 @@ export class WallWeather extends LitElement {
     super();
     this._forecastError = false;
     this._now = new Date();
+    this.dimmed = false;
   }
 
   setConfig(config: WallWeatherConfig): void {
@@ -146,7 +150,7 @@ export class WallWeather extends LitElement {
     const to = cfg.unit ? asUnit(cfg.unit) : from;
     const { today, upcoming } = splitForecast(this._forecast ?? [], this._now, cfg.forecast_days ?? 5);
     const show = cfg.show ?? 'both';
-    const animated = cfg.animations !== false;
+    const animated = cfg.animations !== false && !this.dimmed;
 
     return html`<div class="weather" style=${styleMap(this._vars)}>
       ${show !== 'forecast' ? this._renderCurrent(state.state, state.attributes, today, from, to, animated) : nothing}

@@ -116,6 +116,15 @@ describe('wall-weather', () => {
     expect((($('.day-icon') as unknown) as { icon: string }).icon).toBe('partly-cloudy-day');
   });
 
+  it('holds its icons still while dimmed', async () => {
+    await mount();
+    const animated = () => $$('wall-weather-icon').map((i) => (i as unknown as { animated: boolean }).animated);
+    expect(animated().every(Boolean)).toBe(true);
+    el!.dimmed = true;
+    await settle();
+    expect(animated().some(Boolean)).toBe(false);
+  });
+
   it('updates when HA pushes a new forecast', async () => {
     const { hass } = await mount({ forecast_days: 1 });
     hass.pushForecast('weather.forecast_home', [day(18, 'sunny', 80, 60), day(19, 'snowy', 30, 20)]);

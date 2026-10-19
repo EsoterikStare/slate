@@ -51,6 +51,13 @@ export class WallCalendar extends LitElement {
   declare _now: Date;
   declare _measured?: RowMetrics & { chrome: number };
 
+  /**
+   * Height the card would take with nothing collapsed, given its current
+   * events and measured sizes. wall-layout uses it to decide how much room to
+   * hand over; it's announced with a `wall-natural-height` event on change.
+   */
+  naturalHeight = 0;
+
   private _scaleVars: Record<string, string> = {};
   private _fetchedKey = '';
   private _fetchSeq = 0;
@@ -188,6 +195,14 @@ export class WallCalendar extends LitElement {
     const m = this.metrics ?? this._measured;
     const available = m && this.availableHeight !== undefined ? this.availableHeight - m.chrome : Infinity;
     const plan = fitCalendar(placed, m ?? ZERO_METRICS, available, cfg.minEventsPerDay);
+    const natural = m ? fitCalendar(placed, m, Infinity, cfg.minEventsPerDay).height + m.chrome : 0;
+    if (Math.abs(natural - this.naturalHeight) > 0.5) {
+      this.naturalHeight = natural;
+      // Announced after render so listeners can read the new layout.
+      void this.updateComplete.then(() =>
+        this.dispatchEvent(new CustomEvent('wall-natural-height', { detail: natural, bubbles: true, composed: true })),
+      );
+    }
 
     return html`
       <div class="card" style=${styleMap({ ...this._scaleVars, '--today-color': cfg.todayColor })}>

@@ -5,29 +5,15 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 import { createFakeHass } from '../ha/fake-hass';
-import { addDays, startOfDay } from '../calendar/dates';
-import type { ForecastEntry } from '../weather/forecast';
+import { forecast, weatherEntity } from '../stories/fixtures';
 import { HA_CONDITIONS } from '../weather/conditions';
 import './wall-clock';
 import './wall-weather';
 
-const today = startOfDay(new Date());
-const conditions = ['sunny', 'partlycloudy', 'rainy', 'pouring', 'lightning-rainy', 'snowy', 'cloudy'];
-const forecast: ForecastEntry[] = conditions.map((condition, i) => ({
-  datetime: addDays(today, i).toISOString(),
-  condition,
-  temperature: 78 - i * 3,
-  templow: 55 - i * 2,
-  precipitation_probability: [10, 20, 70, 90, 60, 40, 15][i],
-}));
-
 const makeHass = (condition: string, night: boolean) =>
   createFakeHass({
     entities: {
-      'weather.forecast_home': {
-        state: condition,
-        attributes: { temperature: 72, apparent_temperature: 70, humidity: 45, wind_speed: 8, wind_speed_unit: 'mph', temperature_unit: '°F' },
-      },
+      'weather.forecast_home': weatherEntity(condition),
       'sun.sun': { state: night ? 'below_horizon' : 'above_horizon' },
     },
     forecasts: { 'weather.forecast_home': forecast },

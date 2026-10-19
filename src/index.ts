@@ -3,3 +3,4 @@
 import './cards/wall-calendar';
 import './cards/wall-clock';
 import './cards/wall-weather';
+import './cards/wall-layout';

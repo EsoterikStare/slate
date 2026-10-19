@@ -12,6 +12,8 @@ export interface HassEntity {
 
 export interface HomeAssistant {
   states: Record<string, HassEntity>;
+  /** False while the frontend's websocket to HA is down. */
+  connected?: boolean;
   config: {
     time_zone: string;
     unit_system: { temperature: string };
