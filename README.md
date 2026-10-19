@@ -140,10 +140,19 @@ pnpm build         # dist/wall-cards.js
 ```
 
 **Against your real HA, live:** run `pnpm dev`, allow port 5173 through
-Windows Firewall (private networks), and in a *separate* test dashboard add a
-JavaScript module resource `http://<this-pc-ip>:5173/src/index.ts`. Save a
-file, refresh the dashboard, see the change with real calendars and weather.
-(Works because HA is served over plain `http://`.)
+Windows Firewall (private networks only):
+
+```powershell
+New-NetFirewallRule -DisplayName "Vite dev (wall-cards)" -Direction Inbound -Protocol TCP -LocalPort 5173 -Profile Private -Action Allow
+```
+
+then add a JavaScript module resource `http://<this-pc-ip>:5173/src/index.ts`
+and build the layout in a test dashboard. Save a file, refresh, see the change
+with real calendars and weather. (Works because HA is served over plain
+`http://`.) Resources are global to HA, not per dashboard, so remove the dev
+resource when you're done, and never keep it alongside a HACS-installed copy
+(both would register the same card names). If a VPN is running on the dev PC,
+it may need LAN connections allowed.
 
 **A real build on the kiosk:** `pnpm deploy:dev` builds and copies the bundle
 to `\\homeassistant.local\config\www\wall-cards` through the Samba share
