@@ -113,6 +113,10 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
 - Bar lanes run across the whole row so bars line up. Each day's event budget
   only counts the bars that actually cover that day, so a day isn't penalised
   for another day's trip.
+- The card measures one hidden copy of each building block (header, bar,
+  event, "+N more") to get real pixel heights for the current font and
+  scale, and re-measures when its width changes. Every event therefore has the
+  same height (titles are one line with an ellipsis).
 - Implemented in `src/calendar/layout.ts` (pure functions, measured heights
   passed in). The Storybook story "Calendar/Layout plan (debug)" shows it as
   boxes, with a slider for the available height.
@@ -179,5 +183,9 @@ cards:
 ```
 
 ## Open questions
+- **Event titles are truncated hard** at the default size (about 150px columns,
+  e.g. "Neighborhood C…"). Options: a `title_lines: 2` setting that wraps titles
+  onto a second line (each event then reserves two title lines, so fewer fit
+  per day), a slightly smaller default `event_title`, or keep it as is.
 - How time-zone and DST edge cases look in multi-day bars. Settle during
   implementation, with tests.
