@@ -1,6 +1,7 @@
 // <wall-layout>: the full-screen kiosk composition. The top rows (clock,
 // weather) sit directly on the bottom card (calendar), anchored to the bottom
-// edge and only as tall as their content. Two styles:
+// edge and only as tall as their content; rows can instead be pinned to the
+// top of the screen (the forecast strip, by default) or hidden. Two styles:
 //   docked (default)  the calendar runs edge to edge down to the bottom edge
 //                     on solid black; the photo fills only the area above it,
 //                     behind the clock and weather.
@@ -17,7 +18,8 @@ import type { BackgroundConfig } from '../background/sources';
 import { validateBackground } from '../background/sources';
 import type { HomeAssistant } from '../ha/types';
 import { inWindow, parseTimeOfDay } from '../layout/night';
-import { planScreen } from '../layout/screen';
+import type { RowPlacement } from '../layout/screen';
+import { defaultPlacement, planScreen, rowsHeight } from '../layout/screen';
 import './wall-background';
 import type { WallBackground } from './wall-background';
 
@@ -30,6 +32,12 @@ export interface LayoutRow {
   cards: CardConfig[];
   /** Folded away first when the calendar needs the room (the forecast strip). */
   collapsible?: boolean;
+  /**
+   * `top`: pinned to the top of the screen. `stack`: sits on the calendar.
+   * `hidden`: not shown. Defaults to `top` for a row holding only the
+   * forecast strip, `stack` otherwise.
+   */
+  placement?: RowPlacement;
 }
 
 export interface WallLayoutConfig {
@@ -54,7 +62,7 @@ export interface WallLayoutConfig {
 export interface LayoutMeasurement {
   width: number;
   height: number;
-  /** Rendered height of each top row (collapsed rows keep their full height). */
+  /** Rendered height of each shown row, in config order (collapsed rows keep their full height). */
   rowHeights: number[];
   rowGap: number;
   bottomNatural: number;
@@ -100,7 +108,8 @@ export class WallLayout extends LitElement {
 
   declare hass?: HomeAssistant;
   declare _config?: WallLayoutConfig;
-  declare _rows: { row: LayoutRow; cards: CardElement[] }[];
+  /** Shown rows only (hidden ones are never built), in config order. */
+  declare _rows: { row: LayoutRow; placement: 'top' | 'stack'; cards: CardElement[] }[];
   declare _bottom?: CardElement;
   declare _background?: WallBackground;
   declare _collapsed: boolean;
@@ -129,6 +138,12 @@ export class WallLayout extends LitElement {
   setConfig(config: WallLayoutConfig): void {
     if (!config.top?.length && !config.bottom) throw new Error('wall-layout: add `top` rows and/or a `bottom` card');
     if (config.background) validateBackground(config.background);
+    for (const r of config.top ?? []) {
+      const p = toRow(r).placement;
+      if (p !== undefined && p !== 'top' && p !== 'stack' && p !== 'hidden') {
+        throw new Error('wall-layout: a row `placement` must be top, stack or hidden');
+      }
+    }
     if (config.bottom_style !== undefined && config.bottom_style !== 'docked' && config.bottom_style !== 'floating') {
       throw new Error('wall-layout: `bottom_style` must be docked or floating');
     }
@@ -149,11 +164,12 @@ export class WallLayout extends LitElement {
 
   private async _buildCards(config: WallLayoutConfig): Promise<void> {
     const build = ++this._build;
+    const shown = (config.top ?? [])
+      .map(toRow)
+      .map((row) => ({ row, placement: row.placement ?? defaultPlacement(row.cards) }))
+      .filter((r): r is { row: LayoutRow; placement: 'top' | 'stack' } => r.placement !== 'hidden');
     const rows = await Promise.all(
-      (config.top ?? []).map(async (r) => {
-        const row = toRow(r);
-        return { row, cards: await Promise.all(row.cards.map(createCard)) };
-      }),
+      shown.map(async ({ row, placement }) => ({ row, placement, cards: await Promise.all(row.cards.map(createCard)) })),
     );
     const bottom = config.bottom ? await createCard(config.bottom) : undefined;
     if (build !== this._build) return; // config changed again meanwhile
@@ -232,7 +248,7 @@ export class WallLayout extends LitElement {
   protected override updated(changed: PropertyValues<this>): void {
     // The top rows and bottom card appear once their cards are built, and
     // swap containers with bottom_style, so (re)attach the observer as they do.
-    for (const el of this.renderRoot.querySelectorAll('.top, .bottom')) {
+    for (const el of this.renderRoot.querySelectorAll('.header, .top, .bottom')) {
       if (this._resize && !this._observed.has(el)) {
         this._resize.observe(el);
         this._observed.add(el);
@@ -248,14 +264,16 @@ export class WallLayout extends LitElement {
   private _measureDom(): LayoutMeasurement {
     const root = this.renderRoot;
     const screen = root.querySelector('.screen') as HTMLElement | null;
-    const top = root.querySelector('.top') as HTMLElement | null;
+    const group = root.querySelector('.top, .header') as HTMLElement | null;
     const pad = this._config?.padding ?? 16;
     return {
       width: screen?.clientWidth ?? 0,
       // Docked, the calendar meets the screen edge: only the top is padded.
       height: (screen?.clientHeight ?? 0) - (this._docked ? 1 : 2) * pad,
-      rowHeights: [...root.querySelectorAll('.top > .row')].map((r) => r.getBoundingClientRect().height),
-      rowGap: top ? parseFloat(getComputedStyle(top).rowGap) || 0 : 0,
+      rowHeights: this._rows.map(
+        (_, i) => root.querySelector(`.row[data-index="${i}"]`)?.getBoundingClientRect().height ?? 0,
+      ),
+      rowGap: group ? parseFloat(getComputedStyle(group).rowGap) || 0 : 0,
       bottomNatural: this._bottom?.naturalHeight || this._bottom?.getBoundingClientRect().height || 0,
     };
   }
@@ -264,13 +282,17 @@ export class WallLayout extends LitElement {
     if (!this._config) return;
     const m = (this.measure ?? (() => this._measureDom()))();
     this._unit = m.width / 100;
-    const gaps = (n: number) => Math.max(0, n - 1) * m.rowGap;
-    const visible = this._rows.map((r, i) => ({ h: m.rowHeights[i] ?? 0, keep: !r.row.collapsible }));
+    const gap = this._config.gap ?? 24;
+    const rows = this._rows.map((r, i) => ({
+      height: m.rowHeights[i] ?? 0,
+      placement: r.placement,
+      collapsible: !!r.row.collapsible,
+    }));
     const plan = planScreen({
       height: m.height,
-      gap: this._config.gap ?? 24,
-      topFull: visible.reduce((s, r) => s + r.h, 0) + gaps(visible.length),
-      topCompact: visible.filter((r) => r.keep).reduce((s, r) => s + r.h, 0) + gaps(visible.filter((r) => r.keep).length),
+      gap,
+      topFull: rowsHeight(rows, m.rowGap, gap, true),
+      topCompact: rowsHeight(rows, m.rowGap, gap, false),
       bottomNatural: m.bottomNatural,
     });
     this._collapsed = plan.collapseTop;
@@ -283,20 +305,28 @@ export class WallLayout extends LitElement {
     const cfg = this._config;
     if (!cfg) return nothing;
     const brightness = cfg.night?.brightness ?? 0.3;
-    const top = this._rows.length
-      ? html`<div class="top">
-          ${this._rows.map(
-            (r) => html`<div class=${classMap({ row: true, collapsed: !!r.row.collapsible && this._collapsed })}>
-              ${r.cards}
-            </div>`,
-          )}
-        </div>`
-      : nothing;
+    const group = (placement: 'top' | 'stack', cls: string) => {
+      const rows = this._rows.map((r, i) => ({ r, i })).filter(({ r }) => r.placement === placement);
+      return rows.length
+        ? html`<div class=${cls}>
+            ${rows.map(
+              ({ r, i }) => html`<div
+                class=${classMap({ row: true, collapsed: !!r.row.collapsible && this._collapsed })}
+                data-index=${i}
+              >
+                ${r.cards}
+              </div>`,
+            )}
+          </div>`
+        : nothing;
+    };
+    const header = group('top', 'header');
+    const top = group('stack', 'top');
     const bottom = this._bottom ? html`<div class="bottom">${this._bottom}</div>` : nothing;
     const body = this._docked
-      ? html`<div class="photo">${this._background ?? nothing}${top}</div>
+      ? html`<div class="photo">${this._background ?? nothing}${header}${top}</div>
           ${bottom}`
-      : html`${this._background ?? nothing}
+      : html`${this._background ?? nothing}${header}
           <div class="stack">${top}${bottom}</div>`;
     return html`<div
       class=${classMap({ screen: true, docked: this._docked, floating: !this._docked })}
@@ -333,11 +363,19 @@ export class WallLayout extends LitElement {
       flex-direction: column;
       row-gap: var(--gap);
     }
-    .top {
+    .top,
+    .header {
       position: relative;
       display: flex;
       flex-direction: column;
       row-gap: 16px;
+    }
+    /* Rows pinned to the top of the screen, over the photo. */
+    .header {
+      position: absolute;
+      top: var(--pad);
+      left: var(--pad);
+      right: var(--pad);
     }
     /* Docked: the photo area takes whatever the calendar leaves; the top rows
        sit at its bottom edge, just above the calendar. */

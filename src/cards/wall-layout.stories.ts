@@ -20,6 +20,7 @@ interface Args {
   /** Extra filler events per day to push the calendar up the screen. */
   busy: number;
   bottom_style: 'docked' | 'floating';
+  forecast_placement: 'top' | 'stack' | 'hidden';
 }
 
 function busyEvents(perDay: number) {
@@ -48,8 +49,17 @@ const meta: Meta<Args> = {
     condition: { control: 'select', options: ['sunny', 'partlycloudy', 'rainy', 'snowy', 'lightning-rainy', 'clear-night'] },
     busy: { control: { type: 'range', min: 0, max: 6 } },
     bottom_style: { control: 'inline-radio', options: ['docked', 'floating'] },
+    forecast_placement: { control: 'inline-radio', options: ['top', 'stack', 'hidden'] },
   },
-  args: { weeks: 3, scale: 1, condition: 'partlycloudy', night: false, busy: 0, bottom_style: 'docked' },
+  args: {
+    weeks: 3,
+    scale: 1,
+    condition: 'partlycloudy',
+    night: false,
+    busy: 0,
+    bottom_style: 'docked',
+    forecast_placement: 'top',
+  },
   render: (args) => {
     const hass = createFakeHass({
       calendars: { ...calendars, 'calendar.garden': [...calendars['calendar.garden']!, ...busyEvents(args.busy)] },
@@ -74,7 +84,11 @@ const meta: Meta<Args> = {
           { type: 'custom:wall-clock' },
           { type: 'custom:wall-weather', entity: 'weather.forecast_home', show: 'current', current: ['feels_like', 'precipitation'] },
         ],
-        { cards: [{ type: 'custom:wall-weather', entity: 'weather.forecast_home', show: 'forecast', forecast_days: 5 }], collapsible: true },
+        {
+          cards: [{ type: 'custom:wall-weather', entity: 'weather.forecast_home', show: 'forecast', forecast_days: 5 }],
+          collapsible: true,
+          placement: args.forecast_placement,
+        },
       ],
       bottom: { ...calendarConfig, weeks: args.weeks },
     };
@@ -91,3 +105,5 @@ export const BusyWeeks: StoryObj<Args> = { args: { busy: 3 } };
 export const VeryBusy: StoryObj<Args> = { args: { busy: 6, weeks: 4 } };
 export const Night: StoryObj<Args> = { args: { night: true, condition: 'clear-night' } };
 export const Floating: StoryObj<Args> = { args: { bottom_style: 'floating' } };
+export const ForecastStacked: StoryObj<Args> = { args: { forecast_placement: 'stack' } };
+export const ForecastHidden: StoryObj<Args> = { args: { forecast_placement: 'hidden' } };

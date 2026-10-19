@@ -4,7 +4,7 @@ import type { HomeAssistant } from '../ha/types';
 import './wall-calendar';
 import './wall-clock';
 import './wall-layout';
-import type { LayoutMeasurement, WallLayout, WallLayoutConfig } from './wall-layout';
+import type { LayoutMeasurement, LayoutRow, WallLayout, WallLayoutConfig } from './wall-layout';
 import './wall-weather';
 
 const hass = createFakeHass({
@@ -51,7 +51,12 @@ async function mount(cfg = config(), h: HomeAssistant = hass) {
 }
 
 const root = () => el!.shadowRoot!;
-const rows = () => [...root().querySelectorAll<HTMLElement>('.top > .row')];
+/** Shown rows in config order, wherever they're placed. */
+const rows = () =>
+  [...root().querySelectorAll<HTMLElement>('.row[data-index]')].sort(
+    (a, b) => Number(a.dataset.index) - Number(b.dataset.index),
+  );
+const groupOf = (row: HTMLElement) => row.parentElement!.className;
 const calendar = () => root().querySelector('.bottom > wall-calendar') as HTMLElement & { availableHeight?: number };
 
 afterEach(() => {
@@ -92,6 +97,7 @@ describe('wall-layout', () => {
     await mount(config({ bottom_style: 'floating' }));
     expect(root().querySelector('.photo')).toBeNull();
     expect(root().querySelector('.screen.floating > wall-background')).not.toBeNull();
+    expect(root().querySelector('.screen.floating > .header')).not.toBeNull();
     const stack = root().querySelector('.screen.floating > .stack')!;
     expect([...stack.children].map((c) => c.className)).toEqual(['top', 'bottom']);
   });
@@ -103,10 +109,39 @@ describe('wall-layout', () => {
     expect(screen.style.getPropertyValue('--wall-scale')).toBe('1.2');
   });
 
+  it('pins the forecast row to the top of the screen by default, with the clock on the calendar', async () => {
+    await mount();
+    expect(rows().map(groupOf)).toEqual(['top', 'header']);
+    expect(root().querySelector('.photo > .header')).not.toBeNull();
+  });
+
+  it('can stack the forecast under the clock instead', async () => {
+    const cfg = config();
+    (cfg.top![1] as LayoutRow).placement = 'stack';
+    await mount(cfg);
+    expect(rows().map(groupOf)).toEqual(['top', 'top']);
+    // 1888 − (300 + 16 + 200) − 24
+    expect(calendar().availableHeight).toBe(1348);
+  });
+
+  it('can hide the forecast row entirely', async () => {
+    const cfg = config();
+    (cfg.top![1] as LayoutRow).placement = 'hidden';
+    await mount(cfg);
+    expect(rows()).toHaveLength(1);
+    expect(root().querySelectorAll('wall-weather')).toHaveLength(1);
+    expect(root().querySelector('.header')).toBeNull();
+    // Only the clock row counts: 1888 − 300 − 24.
+    measured.rowHeights = [300];
+    calendar().dispatchEvent(new CustomEvent('wall-natural-height', { detail: 900, bubbles: true, composed: true }));
+    await settle();
+    expect(calendar().availableHeight).toBe(1564);
+  });
+
   it('gives the calendar the room below the full top area when it fits', async () => {
     await mount();
-    // 1888 − (300 + 16 + 200) − 24 gap
-    expect(calendar().availableHeight).toBe(1348);
+    // 1888 − (forecast 200 + 24 of photo + clock 300) − 24 above the calendar
+    expect(calendar().availableHeight).toBe(1340);
     expect(rows()[1]!.classList.contains('collapsed')).toBe(false);
   });
 
@@ -204,6 +239,7 @@ describe('wall-layout', () => {
     [{ night: { start: '22:00', end: '06:00', brightness: 2 } }, /brightness/],
     [{ background: {} }, /background/],
     [{ bottom_style: 'sideways' }, /bottom_style/],
+    [{ top: [{ cards: [], placement: 'middle' }] }, /placement/],
   ])('rejects bad config %j', (bad, message) => {
     const l = document.createElement('wall-layout');
     expect(() => l.setConfig({ ...config(), ...(bad as object) } as WallLayoutConfig)).toThrow(message);

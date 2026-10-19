@@ -32,3 +32,39 @@ export function planScreen(s: ScreenInput): ScreenPlan {
   }
   return { collapseTop: true, bottomAvailable: Math.max(0, s.height - s.topCompact - s.gap) };
 }
+
+export type RowPlacement = 'top' | 'stack' | 'hidden';
+
+/**
+ * Where a row goes when its config doesn't say: a row holding only the
+ * forecast strip is pinned to the top of the screen, anything else sits on
+ * the calendar.
+ */
+export function defaultPlacement(cards: { type: string; [key: string]: unknown }[]): 'top' | 'stack' {
+  const forecastOnly =
+    cards.length > 0 && cards.every((c) => c.type === 'custom:wall-weather' && c.show === 'forecast');
+  return forecastOnly ? 'top' : 'stack';
+}
+
+export interface MeasuredRow {
+  height: number;
+  placement: 'top' | 'stack';
+  collapsible: boolean;
+}
+
+/**
+ * Height the rows need: those pinned to the top of the screen, those stacked
+ * on the calendar, and — when both groups are showing — `gap` of photo
+ * between them. With `withCollapsible` false, collapsible rows are left out
+ * (the folded state).
+ */
+export function rowsHeight(rows: MeasuredRow[], rowGap: number, gap: number, withCollapsible: boolean): number {
+  const shown = rows.filter((r) => withCollapsible || !r.collapsible);
+  const group = (p: 'top' | 'stack') => {
+    const g = shown.filter((r) => r.placement === p);
+    return { height: g.reduce((s, r) => s + r.height, 0) + Math.max(0, g.length - 1) * rowGap, any: g.length > 0 };
+  };
+  const top = group('top');
+  const stack = group('stack');
+  return top.height + stack.height + (top.any && stack.any ? gap : 0);
+}

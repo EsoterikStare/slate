@@ -62,6 +62,7 @@ views:
                 show: forecast
                 forecast_days: 5
             collapsible: true          # folds away first when the calendar needs room
+            placement: top             # top of screen (default for the forecast), stack (on the calendar), or hidden
         bottom:
           type: custom:wall-calendar
           weeks: 3

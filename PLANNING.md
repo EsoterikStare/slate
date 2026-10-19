@@ -91,8 +91,14 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
     always 7 equal columns.
   - `floating`: the earlier look. The photo fills the whole screen and the
     calendar is a translucent rounded card inset by `padding`.
-- When the block would outgrow the screen, the forecast strip collapses first,
-  then calendar overflow kicks in (below).
+- **Forecast placement** (added 2026-10-19): each `top:` row has a `placement`.
+  `top` pins it to the top of the screen over the photo, `stack` sits it on the
+  calendar, and `hidden` leaves it out. A row holding only the forecast strip
+  defaults to `top`; every other row defaults to `stack`. When there are rows
+  in both places, at least `gap` of photo stays between them.
+- When everything would outgrow the screen, collapsible rows (the forecast
+  strip) fold away first, wherever they're placed, then calendar overflow
+  kicks in (below).
 
 ### Calendar
 - **Rows:** `weeks` (default 3) rows of 7 days, starting on `firstDay` (`sunday` |
