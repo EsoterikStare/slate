@@ -64,6 +64,10 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
     `event_title`, `all_day`, `more`
 - Spacing and icon sizes follow their related text role, so a larger
   `event_title` also makes the event row taller.
+- **Shared unit:** sizes are in `--wall-unit`, which wall-layout sets to 1% of
+  the dashboard width, so a half-width card's text matches a full-width card's.
+  A card used outside wall-layout falls back to 1% of its container or the
+  viewport.
 
 ### Screen layout
 - **Top area:** pinned to the top and only as tall as its content. Clock and date
@@ -127,8 +131,16 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
   `weather/subscribe_forecast` subscription.
 - Configurable: forecast days, °F/°C (defaults to HA's unit), and which current
   conditions to show (e.g. feels-like, humidity, wind, precipitation).
-- **Icons:** Meteocons (Bas Milius, MIT), the same animated "fill" style
-  clock-weather-card uses. `animations: false` turns animation off.
+- **Icons:** Meteocons (Bas Milius, MIT, the `@bybas/weather-icons` package),
+  the same animated "fill" style clock-weather-card uses. Only the ~18 icons the
+  condition mapping can return are bundled. Each icon gets its own shadow root
+  because every Meteocons file reuses the same short gradient ids.
+  `animations: false` pauses them (SMIL `pauseAnimations()`).
+- **One card, two placements:** `show: current | forecast | both`, so
+  wall-layout can put current conditions beside the clock and the forecast
+  strip full-width underneath.
+- Night icons for current conditions follow `sun.sun` (configurable via
+  `sun_entity`). Forecast days always use day icons.
 
 ### Background
 - The source is either an entity's `entity_picture` (the existing

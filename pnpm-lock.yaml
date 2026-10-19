@@ -12,6 +12,9 @@ importers:
         specifier: 3.3.3
         version: 3.3.3
     devDependencies:
+      '@bybas/weather-icons':
+        specifier: 2.0.0
+        version: 2.0.0
       '@storybook/web-components-vite':
         specifier: 10.6.2
         version: 10.6.2(lit@3.3.3)(storybook@10.6.2(react@19.3.1))(vite@8.3.4(@types/node@26.6.5)(esbuild@0.28.2))
@@ -47,6 +50,9 @@ packages:
   '@babel/runtime@7.29.10':
     resolution: {integrity: sha512-NpugTzbKgGrNe45Ui32cN8vCFFMxVtP/9rtfwv0nP5FRDAjvYBxJcLVpYA9mr1jxP6cnIT7x9LUzuDTbWYYNRA==}
     engines: {node: '>=6.9.0'}
+
+  '@bybas/weather-icons@2.0.0':
+    resolution: {integrity: sha512-sUcp8kbQZYoYgTpHkQ1vrxKVSHdc4SxzXLuluVZYa5u8Nqq/GhDYOtWrWLqgN/GhwsZ74dja8TlMvyTll4yl0Q==}
 
   '@emnapi/core@1.11.0':
     resolution: {integrity: sha512-l9Oo58x0HOP5znGzVhYW9U3e5wVuA4LAZU2AGezTmkhO1CgQRFDhDg4nneHsu/t3WniXg9QrG2nIXL/ZS8ln8Q==}
@@ -1178,6 +1184,8 @@ snapshots:
   '@babel/helper-validator-identifier@7.29.7': {}
 
   '@babel/runtime@7.29.10': {}
+
+  '@bybas/weather-icons@2.0.0': {}
 
   '@emnapi/core@1.11.0':
     dependencies:

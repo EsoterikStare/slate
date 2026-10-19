@@ -18,6 +18,7 @@
     "lit": "3.3.3"
   },
   "devDependencies": {
+    "@bybas/weather-icons": "2.0.0",
     "@storybook/web-components-vite": "10.6.2",
     "happy-dom": "21.0.3",
     "storybook": "10.6.2",
