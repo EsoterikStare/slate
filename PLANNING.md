@@ -82,6 +82,12 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
   rows up with it.
 - **Above the block:** the background photo. A quiet week leaves a big window
   onto the photo, a busy week a small one.
+- **`bottom_style`** (wall-layout, added 2026-10-19):
+  - `docked` (default): the calendar runs edge to edge and down to the bottom
+    edge on solid black, with no rounded corners or blur. The photo fills only
+    the area above it, behind the clock and weather.
+  - `floating`: the earlier look. The photo fills the whole screen and the
+    calendar is a translucent rounded card inset by `padding`.
 - When the block would outgrow the screen, the forecast strip collapses first,
   then calendar overflow kicks in (below).
 
@@ -96,9 +102,10 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
   `relative_day_names: true` shows "Today" and "Tomorrow" instead.
 - **Legend:** coloured dots with calendar names across the top, wrapping as needed
   (7 calendars).
-- **Timed events:** two lines, with a calendar-coloured bar on the left. Line 1 is a
-  compact time range in muted text (`11 – 11:50a`, `6 – 10p`, `11:30a – 1p`; a
-  24-hour option gives `18 – 22`). Line 2 is the title, truncated with an ellipsis.
+- **Timed events:** a calendar-coloured bar on the left. Line 1 is a compact
+  time range in muted text (`11 – 11:50a`, `6 – 10p`, `11:30a – 1p`; a 24-hour
+  option gives `18 – 22`). Below it, the title wraps to at most `title_lines`
+  lines (default 2, decided 2026-10-19), then ends in an ellipsis.
   Each event sits on a dark translucent background.
 - **All-day and multi-day events:** spanning bars in lanes at the top of each row,
   wrapping onto the next row when needed.
@@ -120,10 +127,17 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
 - Bar lanes run across the whole row so bars line up. Each day's event budget
   only counts the bars that actually cover that day, so a day isn't penalised
   for another day's trip.
-- The card measures one hidden copy of each building block (header, bar,
-  event, "+N more") to get real pixel heights for the current font and
-  scale, and re-measures when its width changes. Every event therefore has the
-  same height (titles are one line with an ellipsis).
+- The card measures a hidden copy of each building block (header, bar, "+N
+  more") and of every timed event, laid out in a real week-row grid so column
+  widths and title wrapping match. This gives real pixel heights for the
+  current font and scale, including which titles wrap. It re-measures when its
+  width or events change.
+- Why measure at all: everything visible is plain responsive CSS, but CSS
+  can't decide what to hide. It can't count clipped events for "+N more",
+  collapse the furthest week first, or guarantee a per-day minimum. Those
+  rules need heights before rendering. (Discussed 2026-10-19. The
+  alternatives were reserving two lines for every event, or pure CSS
+  clipping without those rules.)
 - Implemented in `src/calendar/layout.ts` (pure functions, measured heights
   passed in). The Storybook story "Calendar/Layout plan (debug)" shows it as
   boxes, with a slider for the available height.
@@ -212,9 +226,5 @@ cards:
 ```
 
 ## Open questions
-- **Event titles are truncated hard** at the default size (about 150px columns,
-  e.g. "Neighborhood C…"). Options: a `title_lines: 2` setting that wraps titles
-  onto a second line (each event then reserves two title lines, so fewer fit
-  per day), a slightly smaller default `event_title`, or keep it as is.
 - How time-zone and DST edge cases look in multi-day bars. Settle during
   implementation, with tests.

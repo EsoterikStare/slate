@@ -72,6 +72,27 @@ describe('wall-layout', () => {
     for (const c of children) expect((c as unknown as { hass: unknown }).hass).toBe(hass);
   });
 
+  it('docks the calendar by default: photo and top rows above it, calendar on black below', async () => {
+    await mount();
+    const photo = root().querySelector('.screen.docked > .photo')!;
+    expect(photo.querySelector(':scope > wall-background')).not.toBeNull();
+    expect(photo.querySelector(':scope > .top')).not.toBeNull();
+    const bottom = root().querySelector<HTMLElement>('.screen.docked > .bottom')!;
+    expect(bottom.querySelector('wall-calendar')).not.toBeNull();
+    // The calendar's panel styling is switched to solid, square, unblurred black.
+    const styles = getComputedStyle(bottom);
+    expect(styles.getPropertyValue('--wall-panel-background').trim()).toBe('#000');
+    expect(styles.getPropertyValue('--wall-panel-radius').trim()).toBe('0');
+  });
+
+  it('can float the calendar as a card over a full-screen photo instead', async () => {
+    await mount(config({ bottom_style: 'floating' }));
+    expect(root().querySelector('.photo')).toBeNull();
+    expect(root().querySelector('.screen.floating > wall-background')).not.toBeNull();
+    const stack = root().querySelector('.screen.floating > .stack')!;
+    expect([...stack.children].map((c) => c.className)).toEqual(['top', 'bottom']);
+  });
+
   it('sets the shared text unit from its width, and the global scale', async () => {
     await mount(config({ scale: 1.2 }));
     const screen = root().querySelector<HTMLElement>('.screen')!;
@@ -179,6 +200,7 @@ describe('wall-layout', () => {
     [{ night: { start: '10pm', end: '06:00' } }, /time of day/],
     [{ night: { start: '22:00', end: '06:00', brightness: 2 } }, /brightness/],
     [{ background: {} }, /background/],
+    [{ bottom_style: 'sideways' }, /bottom_style/],
   ])('rejects bad config %j', (bad, message) => {
     const l = document.createElement('wall-layout');
     expect(() => l.setConfig({ ...config(), ...(bad as object) } as WallLayoutConfig)).toThrow(message);

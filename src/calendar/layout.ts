@@ -79,6 +79,11 @@ export interface RowMetrics {
   header: number;
   bar: number;
   event: number;
+  /**
+   * Measured height per event id, for events whose title wraps to a second
+   * line. Events not listed are `event` tall.
+   */
+  eventHeights?: ReadonlyMap<string, number>;
   /** Height of a "+N more" line. */
   more: number;
   /** Vertical gap between week rows. */
@@ -128,7 +133,9 @@ export function planRow(w: WeekPlacement, cap: number, m: RowMetrics, isFirst: b
     const hide = covering.length - barsShown + (timed.length - shown);
     visibleTimed.push(shown);
     hidden.push(hide);
-    tallestDay = Math.max(tallestDay, shown * m.event + (hide > 0 ? m.more : 0));
+    let stack = hide > 0 ? m.more : 0;
+    for (let i = 0; i < shown; i++) stack += m.eventHeights?.get(timed[i]!.id) ?? m.event;
+    tallestDay = Math.max(tallestDay, stack);
   });
 
   const height = (isFirst ? m.firstHeader : m.header) + visibleLanes * m.bar + tallestDay;

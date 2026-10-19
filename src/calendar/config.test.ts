@@ -14,6 +14,7 @@ describe('resolveConfig', () => {
       pastEvents: 'dim',
       relativeDayNames: false,
       showLegend: true,
+      titleLines: 2,
     });
   });
 
@@ -34,6 +35,7 @@ describe('resolveConfig', () => {
     [{ calendars: ['calendar.a'], weeks: 0 }, /weeks/],
     [{ calendars: ['calendar.a'], weeks: 2.5 }, /weeks/],
     [{ calendars: ['calendar.a'], first_day: 'friday' }, /first_day/],
+    [{ calendars: ['calendar.a'], title_lines: 0 }, /title_lines/],
   ])('rejects %j', (bad, message) => {
     expect(() => resolveConfig({ ...base, ...(bad as object) } as never)).toThrow(message);
   });

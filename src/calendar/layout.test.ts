@@ -81,6 +81,22 @@ describe('planRow', () => {
     expect(r.height).toBe(m.header + 3 * m.event);
   });
 
+  it('uses measured heights for events whose titles wrap', () => {
+    const long = timed(26, 9, 'A title long enough to wrap');
+    const w = placeWeek(week2, [long, timed(26, 10), timed(27, 9)]);
+    const eventHeights = new Map([[long.id, 35]]);
+    // Monday: 35 + 20; Tuesday: 20.
+    expect(planRow(w, Infinity, { ...m, eventHeights }, false).height).toBe(m.header + 55);
+  });
+
+  it('collapses by the real heights of the events it keeps', () => {
+    const tall = timed(26, 9, 'tall');
+    const w = placeWeek(week2, [tall, timed(26, 10), timed(26, 11)]);
+    const eventHeights = new Map([[tall.id, 35]]);
+    // Keeps the two earliest (35 + 20) plus the "+1 more" line.
+    expect(planRow(w, 2, { ...m, eventHeights }, false).height).toBe(m.header + 55 + m.more);
+  });
+
   it('uses the taller weekday header on the first row only', () => {
     const w = placeWeek(week1, []);
     expect(planRow(w, Infinity, m, true).height).toBe(m.firstHeader);

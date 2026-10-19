@@ -19,6 +19,7 @@ interface Args {
   night: boolean;
   /** Extra filler events per day to push the calendar up the screen. */
   busy: number;
+  bottom_style: 'docked' | 'floating';
 }
 
 function busyEvents(perDay: number) {
@@ -46,8 +47,9 @@ const meta: Meta<Args> = {
     scale: { control: { type: 'range', min: 0.7, max: 1.5, step: 0.05 } },
     condition: { control: 'select', options: ['sunny', 'partlycloudy', 'rainy', 'snowy', 'lightning-rainy', 'clear-night'] },
     busy: { control: { type: 'range', min: 0, max: 6 } },
+    bottom_style: { control: 'inline-radio', options: ['docked', 'floating'] },
   },
-  args: { weeks: 3, scale: 1, condition: 'partlycloudy', night: false, busy: 0 },
+  args: { weeks: 3, scale: 1, condition: 'partlycloudy', night: false, busy: 0, bottom_style: 'docked' },
   render: (args) => {
     const hass = createFakeHass({
       calendars: { ...calendars, 'calendar.garden': [...calendars['calendar.garden']!, ...busyEvents(args.busy)] },
@@ -62,6 +64,7 @@ const meta: Meta<Args> = {
     const config: WallLayoutConfig = {
       type: 'custom:wall-layout',
       scale: args.scale,
+      bottom_style: args.bottom_style,
       background: { urls: photos, interval: 0.25, fade_seconds: 3 },
       night: args.night
         ? { start: hhmm(new Date(now.getTime() - 3_600_000)), end: hhmm(new Date(now.getTime() + 3_600_000)), brightness: 0.35 }
@@ -87,3 +90,4 @@ export const Default: StoryObj<Args> = {};
 export const BusyWeeks: StoryObj<Args> = { args: { busy: 3 } };
 export const VeryBusy: StoryObj<Args> = { args: { busy: 6, weeks: 4 } };
 export const Night: StoryObj<Args> = { args: { night: true, condition: 'clear-night' } };
+export const Floating: StoryObj<Args> = { args: { bottom_style: 'floating' } };

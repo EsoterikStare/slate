@@ -1,8 +1,12 @@
-// <wall-layout>: the full-screen kiosk composition. A background photo fills
-// the screen; the top rows (clock, weather) sit directly on the bottom card
-// (calendar), and that whole block is anchored to the bottom edge and only
-// as tall as its content, so the photo shows above it. How the height is
-// shared when it runs short is planScreen().
+// <wall-layout>: the full-screen kiosk composition. The top rows (clock,
+// weather) sit directly on the bottom card (calendar), anchored to the bottom
+// edge and only as tall as their content. Two styles:
+//   docked (default)  the calendar runs edge to edge down to the bottom edge
+//                     on solid black; the photo fills only the area above it,
+//                     behind the clock and weather.
+//   floating          the photo fills the whole screen and the calendar is a
+//                     translucent card floating over it.
+// How the height is shared when it runs short is planScreen().
 // Also handles night dimming and a reload watchdog for a dropped HA
 // connection, since nobody is there to press F5.
 
@@ -36,6 +40,8 @@ export interface WallLayoutConfig {
   padding?: number;
   /** Space between the top rows and the bottom card, px. */
   gap?: number;
+  /** `docked`: edge-to-edge calendar on black, photo above it. `floating`: card over a full-screen photo. */
+  bottom_style?: 'docked' | 'floating';
   background?: BackgroundConfig & { fade_seconds?: number };
   night?: { start: string; end: string; brightness?: number };
   /** Reload the page after the HA connection has been down this many seconds. `false` disables. */
@@ -108,6 +114,7 @@ export class WallLayout extends LitElement {
 
   private _build = 0;
   private _resize?: ResizeObserver;
+  private _observed = new WeakSet<Element>();
   private _clock?: ReturnType<typeof setInterval>;
   private _watchdog?: ReturnType<typeof setTimeout>;
 
@@ -122,6 +129,9 @@ export class WallLayout extends LitElement {
   setConfig(config: WallLayoutConfig): void {
     if (!config.top?.length && !config.bottom) throw new Error('wall-layout: add `top` rows and/or a `bottom` card');
     if (config.background) validateBackground(config.background);
+    if (config.bottom_style !== undefined && config.bottom_style !== 'docked' && config.bottom_style !== 'floating') {
+      throw new Error('wall-layout: `bottom_style` must be docked or floating');
+    }
     if (config.night) {
       parseTimeOfDay(config.night.start);
       parseTimeOfDay(config.night.end);
@@ -216,14 +226,23 @@ export class WallLayout extends LitElement {
     if (typeof ResizeObserver !== 'undefined') {
       this._resize = new ResizeObserver(() => this._relayout());
       this._resize.observe(this);
-      // The stack resizes whenever a row or the bottom card does.
-      const stack = this.renderRoot.querySelector('.stack');
-      if (stack) this._resize.observe(stack);
     }
   }
 
   protected override updated(changed: PropertyValues<this>): void {
+    // The top rows and bottom card appear once their cards are built, and
+    // swap containers with bottom_style, so (re)attach the observer as they do.
+    for (const el of this.renderRoot.querySelectorAll('.top, .bottom')) {
+      if (this._resize && !this._observed.has(el)) {
+        this._resize.observe(el);
+        this._observed.add(el);
+      }
+    }
     if (changed.has('_rows') || changed.has('_bottom') || changed.has('_config')) this._relayout();
+  }
+
+  private get _docked(): boolean {
+    return (this._config?.bottom_style ?? 'docked') === 'docked';
   }
 
   private _measureDom(): LayoutMeasurement {
@@ -233,7 +252,8 @@ export class WallLayout extends LitElement {
     const pad = this._config?.padding ?? 16;
     return {
       width: screen?.clientWidth ?? 0,
-      height: (screen?.clientHeight ?? 0) - 2 * pad,
+      // Docked, the calendar meets the screen edge: only the top is padded.
+      height: (screen?.clientHeight ?? 0) - (this._docked ? 1 : 2) * pad,
       rowHeights: [...root.querySelectorAll('.top > .row')].map((r) => r.getBoundingClientRect().height),
       rowGap: top ? parseFloat(getComputedStyle(top).rowGap) || 0 : 0,
       bottomNatural: this._bottom?.naturalHeight || this._bottom?.getBoundingClientRect().height || 0,
@@ -262,30 +282,32 @@ export class WallLayout extends LitElement {
   protected override render() {
     const cfg = this._config;
     if (!cfg) return nothing;
-    const pad = `${cfg.padding ?? 16}px`;
     const brightness = cfg.night?.brightness ?? 0.3;
+    const top = this._rows.length
+      ? html`<div class="top">
+          ${this._rows.map(
+            (r) => html`<div class=${classMap({ row: true, collapsed: !!r.row.collapsible && this._collapsed })}>
+              ${r.cards}
+            </div>`,
+          )}
+        </div>`
+      : nothing;
+    const bottom = this._bottom ? html`<div class="bottom">${this._bottom}</div>` : nothing;
+    const body = this._docked
+      ? html`<div class="photo">${this._background ?? nothing}${top}</div>
+          ${bottom}`
+      : html`${this._background ?? nothing}
+          <div class="stack">${top}${bottom}</div>`;
     return html`<div
-      class="screen"
+      class=${classMap({ screen: true, docked: this._docked, floating: !this._docked })}
       style=${styleMap({
         '--wall-unit': this._unit ? `${this._unit}px` : null,
         '--wall-scale': String(cfg.scale ?? 1),
-        '--pad': pad,
+        '--pad': `${cfg.padding ?? 16}px`,
         '--gap': `${cfg.gap ?? 24}px`,
       })}
     >
-      ${this._background ?? nothing}
-      <div class="stack">
-        ${this._rows.length
-          ? html`<div class="top">
-              ${this._rows.map(
-                (r) => html`<div class=${classMap({ row: true, collapsed: !!r.row.collapsible && this._collapsed })}>
-                  ${r.cards}
-                </div>`,
-              )}
-            </div>`
-          : nothing}
-        ${this._bottom ? html`<div class="bottom">${this._bottom}</div>` : nothing}
-      </div>
+      ${body}
       <div class="dim" style=${styleMap({ opacity: this._night ? String(1 - brightness) : '0' })}></div>
     </div>`;
   }
@@ -300,7 +322,8 @@ export class WallLayout extends LitElement {
       overflow: hidden;
       box-sizing: border-box;
     }
-    /* Top rows sit directly on the bottom card; the block hugs the bottom edge. */
+    /* Floating: top rows sit directly on the bottom card; the block hugs the
+       bottom edge, over a full-screen photo. */
     .stack {
       position: absolute;
       left: var(--pad);
@@ -315,6 +338,32 @@ export class WallLayout extends LitElement {
       display: flex;
       flex-direction: column;
       row-gap: 16px;
+    }
+    /* Docked: the photo area takes whatever the calendar leaves; the top rows
+       sit at its bottom edge, just above the calendar. */
+    .screen.docked {
+      display: flex;
+      flex-direction: column;
+      background: #000;
+    }
+    .photo {
+      position: relative;
+      flex: 1 1 0;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .docked .top {
+      position: absolute;
+      left: var(--pad);
+      right: var(--pad);
+      bottom: var(--gap);
+    }
+    .docked .bottom {
+      flex: none;
+      --wall-panel-background: #000;
+      --wall-panel-blur: 0px;
+      --wall-panel-radius: 0;
+      --wall-event-background: #1c1c1c;
     }
     .row {
       display: flex;

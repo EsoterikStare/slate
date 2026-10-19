@@ -29,6 +29,8 @@ export interface WallCalendarConfig {
   past_events?: 'dim' | 'hide';
   relative_day_names?: boolean;
   show_legend?: boolean;
+  /** Lines an event title may wrap to before it's cut off with an ellipsis. */
+  title_lines?: number;
   /** Minutes between refetches, on top of refetching whenever a calendar changes. */
   refresh_interval?: number;
   scale?: number;
@@ -46,6 +48,7 @@ export interface ResolvedCalendarConfig {
   pastEvents: 'dim' | 'hide';
   relativeDayNames: boolean;
   showLegend: boolean;
+  titleLines: number;
   refreshMinutes: number;
   scale: number;
   text: Partial<Record<CalendarTextRole, number>>;
@@ -83,6 +86,8 @@ export function resolveConfig(config: WallCalendarConfig): ResolvedCalendarConfi
   if (firstDay !== 'sunday' && firstDay !== 'monday') {
     throw new Error('wall-calendar: `first_day` must be sunday or monday');
   }
+  const titleLines = config.title_lines ?? 2;
+  if (![1, 2, 3].includes(titleLines)) throw new Error('wall-calendar: `title_lines` must be 1, 2 or 3');
   return {
     calendars,
     weeks,
@@ -92,6 +97,7 @@ export function resolveConfig(config: WallCalendarConfig): ResolvedCalendarConfi
     pastEvents: config.past_events === 'hide' ? 'hide' : 'dim',
     relativeDayNames: config.relative_day_names ?? false,
     showLegend: config.show_legend ?? true,
+    titleLines,
     refreshMinutes: Math.max(1, config.refresh_interval ?? 5),
     scale: config.scale ?? 1,
     text: config.text ?? {},

@@ -9,6 +9,7 @@ import type { ResolvedCalendarConfig, WallCalendarConfig } from '../calendar/con
 import { resolveConfig } from '../calendar/config';
 import { addDays, buildWeeks, dayDiff, startOfDay } from '../calendar/dates';
 import type { CalendarEvent } from '../calendar/events';
+import { isBar } from '../calendar/events';
 import { fetchEvents } from '../calendar/fetch';
 import { formatTime, formatTimeRange } from '../calendar/format';
 import type { BarSegment, CalendarPlan, RowMetrics, RowPlan, WeekPlacement } from '../calendar/layout';
@@ -160,28 +161,39 @@ export class WallCalendar extends LitElement {
   }
 
   protected override updated(changed: PropertyValues<this>): void {
-    if (changed.has('_config')) this._measure();
+    // New events may wrap differently, so their heights need measuring too.
+    if (changed.has('_config') || changed.has('_events')) this._measure();
   }
 
-  /** Reads the rendered sizes of one of each building block from the hidden probe. */
+  /**
+   * Reads real rendered sizes from the hidden probe: one of each building
+   * block, plus every timed event at the true column width so titles that
+   * wrap to a second line are known before the layout is planned.
+   */
   private _measure(): void {
     const root = this.renderRoot as ShadowRoot;
-    const h = (sel: string) => (root.querySelector(sel) as HTMLElement | null)?.getBoundingClientRect().height ?? 0;
-    const card = root.querySelector('.card');
-    const rows = root.querySelector('.rows');
+    const h = (el: Element | null) => el?.getBoundingClientRect().height ?? 0;
+    const q = (sel: string) => root.querySelector(sel);
+    const card = q('.card');
+    const rows = q('.rows');
     if (!card || !rows) return;
+    const event = h(q('.probe .slot.sample'));
+    const eventHeights = new Map<string, number>();
+    for (const el of root.querySelectorAll<HTMLElement>('.probe .slot[data-id]')) {
+      const height = h(el);
+      if (Math.abs(height - event) > 0.5) eventHeights.set(el.dataset.id!, height);
+    }
     const next = {
-      firstHeader: h('.probe .head.first'),
-      header: h('.probe .head.later'),
-      bar: h('.probe .bar-slot'),
-      event: h('.probe .slot'),
-      more: h('.probe .more'),
+      firstHeader: h(q('.probe .head.first')),
+      header: h(q('.probe .head.later')),
+      bar: h(q('.probe .bar-slot')),
+      event,
+      more: h(q('.probe .more')),
       rowGap: parseFloat(getComputedStyle(rows).rowGap) || 0,
-      chrome: card.getBoundingClientRect().height - rows.getBoundingClientRect().height,
+      chrome: h(card) - h(rows),
     };
-    const prev = this._measured;
-    if (!prev || (Object.keys(next) as (keyof typeof next)[]).some((k) => Math.abs(next[k] - prev[k]) > 0.5)) {
-      this._measured = next;
+    if (!this._measured || !sameMetrics(this._measured, { ...next, eventHeights })) {
+      this._measured = { ...next, eventHeights };
     }
   }
 
@@ -205,7 +217,10 @@ export class WallCalendar extends LitElement {
     }
 
     return html`
-      <div class="card" style=${styleMap({ ...this._scaleVars, '--today-color': cfg.todayColor })}>
+      <div
+        class="card"
+        style=${styleMap({ ...this._scaleVars, '--today-color': cfg.todayColor, '--title-lines': String(cfg.titleLines) })}
+      >
         ${cfg.showLegend ? this._renderLegend(cfg) : nothing}
         <div class="rows">${plan.rows.map((row, i) => this._renderRow(placed[i]!, row, i === 0))}</div>
         ${this._renderProbe()}
@@ -284,8 +299,8 @@ export class WallCalendar extends LitElement {
     </div>`;
   }
 
-  private _renderEvent(e: CalendarEvent): TemplateResult {
-    return html`<div class="slot">
+  private _renderEvent(e: CalendarEvent, measure = false): TemplateResult {
+    return html`<div class="slot" data-id=${measure ? e.id : nothing}>
       <div
         class=${classMap({ event: true, ended: e.end <= this._now })}
         style=${styleMap({ '--accent': stripes(this._colorsOf(e), 'to bottom') })}
@@ -296,14 +311,24 @@ export class WallCalendar extends LitElement {
     </div>`;
   }
 
-  /** One of each building block, invisible, so _measure() can read real sizes. */
+  /**
+   * One of each building block, plus every timed event, laid out in a real
+   * week-row grid (column 1) so widths and title wrapping match the real
+   * thing. Invisible; only _measure() reads it.
+   */
   private _renderProbe(): TemplateResult {
+    const timed = this._events.filter((e) => !isBar(e));
     return html`<div class="probe" aria-hidden="true">
-      <div class="head first"><div class="weekday">W</div><div class="num"><span>30</span></div></div>
-      <div class="head later"><div class="num"><span>30</span></div></div>
-      <div class="bar-slot"><div class="bar">X</div></div>
-      <div class="slot"><div class="event"><div class="time">1</div><div class="title">X</div></div></div>
-      <div class="more">+1 more</div>
+      <div class="row">
+        <div class="probe-cell">
+          <div class="head first"><div class="weekday">W</div><div class="num"><span>30</span></div></div>
+          <div class="head later"><div class="num"><span>30</span></div></div>
+          <div class="bar-slot"><div class="bar">X</div></div>
+          <div class="slot sample"><div class="event"><div class="time">1</div><div class="title">X</div></div></div>
+          <div class="more">+1 more</div>
+          ${timed.map((e) => this._renderEvent(e, true))}
+        </div>
+      </div>
     </div>`;
   }
 
@@ -317,7 +342,8 @@ export class WallCalendar extends LitElement {
       container-type: inline-size;
       position: relative;
       box-sizing: border-box;
-      padding: 1.5cqw;
+      --card-pad: 1.5cqw;
+      padding: var(--card-pad);
       background: var(--wall-panel-background, rgba(0, 0, 0, 0.45));
       backdrop-filter: blur(var(--wall-panel-blur, 4px));
       border-radius: var(--wall-panel-radius, 16px);
@@ -440,10 +466,15 @@ export class WallCalendar extends LitElement {
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    /* Wraps to at most --title-lines lines, then ellipsizes. */
     .title {
       ${roleFontSize('event_title', 2)}
+      white-space: normal;
+      overflow-wrap: anywhere;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: var(--title-lines, 2);
       overflow: hidden;
-      text-overflow: ellipsis;
     }
     .ended {
       opacity: var(--wall-past-opacity, 0.45);
@@ -453,18 +484,35 @@ export class WallCalendar extends LitElement {
       opacity: 0.75;
       padding: 0.1em 0.3em;
     }
+    /* Spans the card's content box like .rows does, so the probe's grid
+       columns are exactly as wide as the real ones. */
     .probe {
       position: absolute;
       visibility: hidden;
       pointer-events: none;
       top: 0;
-      left: 0;
-      width: calc(100% / 7);
+      left: var(--card-pad);
+      right: var(--card-pad);
+    }
+    .probe-cell {
+      grid-column: 1;
     }
   `;
 }
 
 const ZERO_METRICS: RowMetrics = { firstHeader: 0, header: 0, bar: 0, event: 0, more: 0, rowGap: 0 };
+
+const NUMERIC_METRICS = ['firstHeader', 'header', 'bar', 'event', 'more', 'rowGap', 'chrome'] as const;
+
+/** Equal within half a pixel, so sub-pixel jitter doesn't cause re-render loops. */
+function sameMetrics(a: RowMetrics & { chrome: number }, b: RowMetrics & { chrome: number }): boolean {
+  if (NUMERIC_METRICS.some((k) => Math.abs(a[k] - b[k]) > 0.5)) return false;
+  const ah = a.eventHeights ?? new Map<string, number>();
+  const bh = b.eventHeights ?? new Map<string, number>();
+  if (ah.size !== bh.size) return false;
+  for (const [id, v] of ah) if (Math.abs(v - (bh.get(id) ?? -1)) > 0.5) return false;
+  return true;
+}
 
 if (!customElements.get('wall-calendar')) {
   customElements.define('wall-calendar', WallCalendar);
