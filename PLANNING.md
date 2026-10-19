@@ -85,7 +85,10 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
 - **`bottom_style`** (wall-layout, added 2026-10-19):
   - `docked` (default): the calendar runs edge to edge and down to the bottom
     edge on solid black, with no rounded corners or blur. The photo fills only
-    the area above it, behind the clock and weather.
+    the area above it, behind the clock and weather. Outer padding and column
+    gaps tighten to 0.4% of the width (about 4px), since the monitor bezel is
+    the margin. That makes columns about 149px wide instead of 142px. Days are
+    always 7 equal columns.
   - `floating`: the earlier look. The photo fills the whole screen and the
     calendar is a translucent rounded card inset by `padding`.
 - When the block would outgrow the screen, the forecast strip collapses first,

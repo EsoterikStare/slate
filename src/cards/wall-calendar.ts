@@ -342,7 +342,8 @@ export class WallCalendar extends LitElement {
       container-type: inline-size;
       position: relative;
       box-sizing: border-box;
-      --card-pad: 1.5cqw;
+      /* Overridable: wall-layout tightens both when docked edge to edge. */
+      --card-pad: var(--wall-calendar-padding, 1.5cqw);
       padding: var(--card-pad);
       background: var(--wall-panel-background, rgba(0, 0, 0, 0.45));
       backdrop-filter: blur(var(--wall-panel-blur, 4px));
@@ -378,7 +379,7 @@ export class WallCalendar extends LitElement {
     .row {
       display: grid;
       grid-template-columns: repeat(7, minmax(0, 1fr));
-      column-gap: 0.8cqw;
+      column-gap: var(--wall-calendar-column-gap, 0.8cqw);
     }
     .head {
       grid-row: 1;

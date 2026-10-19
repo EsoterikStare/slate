@@ -364,6 +364,9 @@ export class WallLayout extends LitElement {
       --wall-panel-blur: 0px;
       --wall-panel-radius: 0;
       --wall-event-background: #1c1c1c;
+      /* No rounded card to keep clear of; the monitor bezel is the margin. */
+      --wall-calendar-padding: 0.4cqw;
+      --wall-calendar-column-gap: 0.4cqw;
     }
     .row {
       display: flex;

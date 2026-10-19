@@ -79,10 +79,13 @@ describe('wall-layout', () => {
     expect(photo.querySelector(':scope > .top')).not.toBeNull();
     const bottom = root().querySelector<HTMLElement>('.screen.docked > .bottom')!;
     expect(bottom.querySelector('wall-calendar')).not.toBeNull();
-    // The calendar's panel styling is switched to solid, square, unblurred black.
+    // The calendar's panel styling is switched to solid, square, unblurred
+    // black, with tighter padding and gaps since there's no card edge to clear.
     const styles = getComputedStyle(bottom);
     expect(styles.getPropertyValue('--wall-panel-background').trim()).toBe('#000');
     expect(styles.getPropertyValue('--wall-panel-radius').trim()).toBe('0');
+    expect(styles.getPropertyValue('--wall-calendar-padding').trim()).toBe('0.4cqw');
+    expect(styles.getPropertyValue('--wall-calendar-column-gap').trim()).toBe('0.4cqw');
   });
 
   it('can float the calendar as a card over a full-screen photo instead', async () => {
