@@ -100,6 +100,24 @@ describe('wall-calendar', () => {
     expect(text($$(el, '.rows > .row')[0]!.querySelector('.weekday')!)).toBe('Monday');
   });
 
+  it('shows the month abbreviation instead of "1" on the first of a month', async () => {
+    const { el } = await mount({});
+    const labels = (row: number) =>
+      [...$$(el, '.rows > .row')[row]!.querySelectorAll('.num')].map((n) => [text(n), n.classList.contains('month')]);
+    // Row 1 is Oct 25 – Oct 31; row 2 starts Sunday Nov 1.
+    expect(labels(1).every(([, month]) => !month)).toBe(true);
+    expect(labels(2)[0]).toEqual(['Nov', true]);
+    expect(labels(2)[1]).toEqual(['2', false]);
+  });
+
+  it('keeps the today highlight on a month label', async () => {
+    vi.setSystemTime(new Date(2026, 10, 1, 9, 0)); // Sunday Nov 1
+    const { el } = await mount({});
+    const today = el.shadowRoot!.querySelector('.rows .num.today')!;
+    expect(text(today)).toBe('Nov');
+    expect(today.classList.contains('month')).toBe(true);
+  });
+
   it('marks today and dims the days before it', async () => {
     const { el } = await mount({});
     const heads = [...$$(el, '.rows > .row')[0]!.querySelectorAll('.head')];

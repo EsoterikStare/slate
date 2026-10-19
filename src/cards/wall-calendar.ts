@@ -243,6 +243,12 @@ export class WallCalendar extends LitElement {
     return e.calendars.map((c) => byEntity.get(c) ?? 'grey');
   }
 
+  /** "Nov" on the 1st of a month, otherwise the day number. */
+  private _dateLabel(day: Date): string {
+    if (day.getDate() !== 1) return String(day.getDate());
+    return day.toLocaleDateString(this.hass?.locale.language ?? 'en', { month: 'short' });
+  }
+
   private _weekdayLabel(day: Date): string {
     const today = startOfDay(this._now);
     if (this._config!.relativeDayNames) {
@@ -264,8 +270,8 @@ export class WallCalendar extends LitElement {
           style=${styleMap({ gridColumn: `${col + 1}` })}
         >
           ${isFirst ? html`<div class="weekday">${this._weekdayLabel(day)}</div>` : nothing}
-          <div class=${classMap({ num: true, today: offset === 0 })}>
-            <span class="disc"><span class="digits">${day.getDate()}</span></span>
+          <div class=${classMap({ num: true, today: offset === 0, month: day.getDate() === 1 })}>
+            <span class="disc"><span class="digits">${this._dateLabel(day)}</span></span>
           </div>
         </div>`;
       })}
@@ -408,13 +414,19 @@ export class WallCalendar extends LitElement {
       justify-content: center;
       line-height: 1;
     }
+    /* Fixed height, so a month label never makes the header taller. Digits
+       get a circle; a month label ("Nov") widens it into a pill. */
     .disc {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 1.4em;
+      box-sizing: border-box;
+      min-width: 1.4em;
       height: 1.4em;
-      border-radius: 50%;
+      border-radius: 0.7em;
+    }
+    .num.month .disc {
+      padding: 0 0.35em;
     }
     .num.today .disc {
       background: var(--today-color);

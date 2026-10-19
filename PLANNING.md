@@ -116,7 +116,10 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
   "21"/"31" about 3px left. Older browsers without `text-box` fall back to
   line-box centring.
 - **Day headers:** the weekday name appears only on the first row; every row shows
-  a large date number. Real weekday names by default. An optional
+  a large date number. On the 1st of a month the number is replaced by the
+  month's short name ("Nov"), at the same size. The highlight has a fixed
+  height, so header rows never grow; a month label just widens today's
+  circle into a pill (about 85px at default size in a ~149px column). Real weekday names by default. An optional
   `relative_day_names: true` shows "Today" and "Tomorrow" instead.
 - **Legend:** coloured dots with calendar names across the top, wrapping as needed
   (7 calendars).
