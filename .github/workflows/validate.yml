@@ -1,0 +1,21 @@
+name: HACS validation
+
+# HACS's own checks for a dashboard ("plugin") repository. Required to pass,
+# with nothing ignored, before the repo can be submitted to the HACS default
+# store; for now it flags problems early. `images` is ignored until the README
+# has screenshots (needed for the default store, not for custom repositories).
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  validate-hacs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: hacs/action@main
+        with:
+          category: plugin
+          ignore: images

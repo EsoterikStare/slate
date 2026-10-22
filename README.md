@@ -17,9 +17,18 @@ Design decisions and their reasons are in [PLANNING.md](PLANNING.md).
 
 ## Install
 
-**Through HACS** (once there's a release): HACS → ⋮ → *Custom repositories* →
-add this repo's URL as type *Dashboard*, then install **Wall Cards**. HACS
-adds the dashboard resource for you.
+> **Status: alpha.** Releases are published as GitHub *pre-releases*
+> (`v0.1.0-alpha.N`), so they're only offered to people who opt in.
+
+**Through HACS:** HACS → ⋮ → *Custom repositories* → add
+`https://github.com/EsoterikStare/wall-cards` as type *Dashboard*. Open
+**Wall Cards**, choose *Download*, and tick **Show beta versions** in the
+download dialog. HACS calls every pre-release a "beta", and while only
+pre-releases exist, nothing is installable without it. HACS adds the
+dashboard resource for you, and offers new releases as updates.
+
+The browser console prints the running version (`WALL-CARDS 0.1.0-alpha.1`) on
+load, which is handy for checking what the kiosk is actually running.
 
 **By hand:** copy `dist/wall-cards.js` (from `pnpm build`, or a release) to
 `/config/www/wall-cards/` and add a dashboard resource (Settings → Dashboards →

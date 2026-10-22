@@ -1,7 +1,12 @@
+import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vitest/config';
+
+const { version } = JSON.parse(readFileSync('package.json', 'utf-8')) as { version: string };
 
 // One self-contained ES module that HA loads as a dashboard resource.
 export default defineConfig({
+  // Printed in the browser console on load, to confirm which release the kiosk runs.
+  define: { __WALL_CARDS_VERSION__: JSON.stringify(version) },
   build: {
     lib: {
       entry: 'src/index.ts',

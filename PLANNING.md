@@ -250,3 +250,25 @@ cards:
 ## Open questions
 - How time-zone and DST edge cases look in multi-day bars. Settle during
   implementation, with tests.
+
+## Releases (decided 2026-10-22)
+
+- Distributed through **HACS as a custom repository** (type Dashboard),
+  from the public GitHub repo `EsoterikStare/wall-cards` (renamed from
+  `Home-Assistant-Dashboard` so the file `wall-cards.js` matches the repo
+  name, as HACS's dashboard-card rules expect). MIT licence.
+- **Alpha phase:** versions `0.1.0-alpha.N`, published as GitHub
+  *pre-releases*. HACS decides "beta" purely from GitHub's pre-release flag
+  (`release.prerelease` in HACS's `repositories/base.py`), not the tag name,
+  so users must tick *Show beta versions* to get them.
+- **To release:** bump `version` in `package.json`, merge to `main`, then
+  publish a GitHub release tagged `v<version>` on `main` (tick *pre-release*
+  while in alpha). `.github/workflows/release.yml` builds and attaches
+  `wall-cards.js`, which HACS downloads (`dist/` is git-ignored, so HACS uses
+  the release asset). The bundle prints its version to the console on load.
+- `.github/workflows/validate.yml` runs HACS's validation (`hacs/action`,
+  category `plugin`). The `images` check is ignored until the README has
+  screenshots.
+- **Later, the HACS default store:** README screenshots, a full release (not a
+  pre-release), validation passing with nothing ignored, then a PR adding the
+  repo to the `plugin` list in `hacs/default`. Reviews can take months.
