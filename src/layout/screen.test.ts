@@ -31,12 +31,12 @@ describe('planScreen', () => {
 
 describe('defaultPlacement', () => {
   it('pins a forecast-only row to the top', () => {
-    expect(defaultPlacement([{ type: 'custom:wall-weather', entity: 'weather.x', show: 'forecast' }])).toBe('top');
+    expect(defaultPlacement([{ type: 'custom:slate-weather', entity: 'weather.x', show: 'forecast' }])).toBe('top');
   });
 
   it('stacks everything else on the calendar', () => {
-    expect(defaultPlacement([{ type: 'custom:wall-clock' }, { type: 'custom:wall-weather', show: 'current' }])).toBe('stack');
-    expect(defaultPlacement([{ type: 'custom:wall-weather', show: 'both' }])).toBe('stack');
+    expect(defaultPlacement([{ type: 'custom:slate-clock' }, { type: 'custom:slate-weather', show: 'current' }])).toBe('stack');
+    expect(defaultPlacement([{ type: 'custom:slate-weather', show: 'both' }])).toBe('stack');
     expect(defaultPlacement([])).toBe('stack');
   });
 });

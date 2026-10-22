@@ -1,5 +1,5 @@
 // A debugging view of fitCalendar(): rough boxes, not the real card's styling
-// (that's the wall-calendar card's own stories). Drag the
+// (that's the slate-calendar card's own stories). Drag the
 // "available" slider to watch rows collapse from the far-future end.
 
 import type { Meta, StoryObj } from '@storybook/web-components-vite';

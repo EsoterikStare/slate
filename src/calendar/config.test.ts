@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { resolveConfig } from './config';
 
-const base = { type: 'custom:wall-calendar' };
+const base = { type: 'custom:slate-calendar' };
 
 describe('resolveConfig', () => {
   it('fills defaults from the plan', () => {

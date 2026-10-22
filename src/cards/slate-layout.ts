@@ -1,4 +1,4 @@
-// <wall-layout>: the full-screen kiosk composition. The top rows (clock,
+// <slate-layout>: the full-screen kiosk composition. The top rows (clock,
 // weather) sit directly on the bottom card (calendar), anchored to the bottom
 // edge and only as tall as their content; rows can instead be pinned to the
 // top of the screen (the forecast strip, by default) or hidden. Two styles:
@@ -20,8 +20,8 @@ import type { HomeAssistant } from '../ha/types';
 import { inWindow, parseTimeOfDay } from '../layout/night';
 import type { RowPlacement } from '../layout/screen';
 import { defaultPlacement, planScreen, rowsHeight } from '../layout/screen';
-import './wall-background';
-import type { WallBackground } from './wall-background';
+import './slate-background';
+import type { SlateBackground } from './slate-background';
 
 export interface CardConfig {
   type: string;
@@ -40,7 +40,7 @@ export interface LayoutRow {
   placement?: RowPlacement;
 }
 
-export interface WallLayoutConfig {
+export interface SlateLayoutConfig {
   type: string;
   /** Global text multiplier for every card. */
   scale?: number;
@@ -94,7 +94,7 @@ async function createCard(config: CardConfig): Promise<CardElement> {
 
 const toRow = (r: LayoutRow | CardConfig[]): LayoutRow => (Array.isArray(r) ? { cards: r } : r);
 
-export class WallLayout extends LitElement {
+export class SlateLayout extends LitElement {
   static override properties = {
     hass: { attribute: false },
     _config: { state: true },
@@ -107,11 +107,11 @@ export class WallLayout extends LitElement {
   };
 
   declare hass?: HomeAssistant;
-  declare _config?: WallLayoutConfig;
+  declare _config?: SlateLayoutConfig;
   /** Shown rows only (hidden ones are never built), in config order. */
   declare _rows: { row: LayoutRow; placement: 'top' | 'stack'; cards: CardElement[] }[];
   declare _bottom?: CardElement;
-  declare _background?: WallBackground;
+  declare _background?: SlateBackground;
   declare _collapsed: boolean;
   declare _unit: number;
   declare _night: boolean;
@@ -135,23 +135,23 @@ export class WallLayout extends LitElement {
     this._night = false;
   }
 
-  setConfig(config: WallLayoutConfig): void {
-    if (!config.top?.length && !config.bottom) throw new Error('wall-layout: add `top` rows and/or a `bottom` card');
+  setConfig(config: SlateLayoutConfig): void {
+    if (!config.top?.length && !config.bottom) throw new Error('slate-layout: add `top` rows and/or a `bottom` card');
     if (config.background) validateBackground(config.background);
     for (const r of config.top ?? []) {
       const p = toRow(r).placement;
       if (p !== undefined && p !== 'top' && p !== 'stack' && p !== 'hidden') {
-        throw new Error('wall-layout: a row `placement` must be top, stack or hidden');
+        throw new Error('slate-layout: a row `placement` must be top, stack or hidden');
       }
     }
     if (config.bottom_style !== undefined && config.bottom_style !== 'docked' && config.bottom_style !== 'floating') {
-      throw new Error('wall-layout: `bottom_style` must be docked or floating');
+      throw new Error('slate-layout: `bottom_style` must be docked or floating');
     }
     if (config.night) {
       parseTimeOfDay(config.night.start);
       parseTimeOfDay(config.night.end);
       const b = config.night.brightness ?? 0.3;
-      if (!(b >= 0 && b <= 1)) throw new Error('wall-layout: `night.brightness` must be between 0 and 1');
+      if (!(b >= 0 && b <= 1)) throw new Error('slate-layout: `night.brightness` must be between 0 and 1');
     }
     this._config = config;
     void this._buildCards(config);
@@ -162,7 +162,7 @@ export class WallLayout extends LitElement {
     return 20;
   }
 
-  private async _buildCards(config: WallLayoutConfig): Promise<void> {
+  private async _buildCards(config: SlateLayoutConfig): Promise<void> {
     const build = ++this._build;
     const shown = (config.top ?? [])
       .map(toRow)
@@ -176,7 +176,7 @@ export class WallLayout extends LitElement {
     this._rows = rows;
     this._bottom = bottom;
     if (config.background) {
-      const bg = document.createElement('wall-background');
+      const bg = document.createElement('slate-background');
       bg.setConfig(config.background);
       this._background = bg;
     } else {
@@ -201,7 +201,7 @@ export class WallLayout extends LitElement {
     super.connectedCallback();
     this._clock = setInterval(() => this._checkNight(), 30_000);
     this._checkNight();
-    this.addEventListener('wall-natural-height', this._relayout);
+    this.addEventListener('slate-natural-height', this._relayout);
   }
 
   override disconnectedCallback(): void {
@@ -211,7 +211,7 @@ export class WallLayout extends LitElement {
     this._watchdog = undefined;
     this._resize?.disconnect();
     this._resize = undefined;
-    this.removeEventListener('wall-natural-height', this._relayout);
+    this.removeEventListener('slate-natural-height', this._relayout);
   }
 
   private _checkNight(): void {
@@ -331,8 +331,8 @@ export class WallLayout extends LitElement {
     return html`<div
       class=${classMap({ screen: true, docked: this._docked, floating: !this._docked })}
       style=${styleMap({
-        '--wall-unit': this._unit ? `${this._unit}px` : null,
-        '--wall-scale': String(cfg.scale ?? 1),
+        '--slate-unit': this._unit ? `${this._unit}px` : null,
+        '--slate-scale': String(cfg.scale ?? 1),
         '--pad': `${cfg.padding ?? 16}px`,
         '--gap': `${cfg.gap ?? 24}px`,
       })}
@@ -348,7 +348,7 @@ export class WallLayout extends LitElement {
     }
     .screen {
       position: relative;
-      height: var(--wall-layout-height, 100dvh);
+      height: var(--slate-layout-height, 100dvh);
       overflow: hidden;
       box-sizing: border-box;
     }
@@ -398,13 +398,13 @@ export class WallLayout extends LitElement {
     }
     .docked .bottom {
       flex: none;
-      --wall-panel-background: #000;
-      --wall-panel-blur: 0px;
-      --wall-panel-radius: 0;
-      --wall-event-background: #1c1c1c;
+      --slate-panel-background: #000;
+      --slate-panel-blur: 0px;
+      --slate-panel-radius: 0;
+      --slate-event-background: #1c1c1c;
       /* No rounded card to keep clear of; the monitor bezel is the margin. */
-      --wall-calendar-padding: 0.4cqw;
-      --wall-calendar-column-gap: 0.4cqw;
+      --slate-calendar-padding: 0.4cqw;
+      --slate-calendar-column-gap: 0.4cqw;
     }
     .row {
       display: flex;
@@ -436,18 +436,18 @@ export class WallLayout extends LitElement {
   `;
 }
 
-if (!customElements.get('wall-layout')) {
-  customElements.define('wall-layout', WallLayout);
+if (!customElements.get('slate-layout')) {
+  customElements.define('slate-layout', SlateLayout);
   const w = window as unknown as { customCards?: unknown[] };
   (w.customCards ??= []).push({
-    type: 'wall-layout',
-    name: 'Wall Layout',
+    type: 'slate-layout',
+    name: 'Slate Layout',
     description: 'Full-screen kiosk layout: background photo, top rows, and a bottom-anchored calendar.',
   });
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wall-layout': WallLayout;
+    'slate-layout': SlateLayout;
   }
 }

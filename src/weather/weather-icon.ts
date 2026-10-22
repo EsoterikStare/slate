@@ -1,4 +1,4 @@
-// <wall-weather-icon>: one Meteocons SVG in its own shadow root. Isolation
+// <slate-weather-icon>: one Meteocons SVG in its own shadow root. Isolation
 // matters: every Meteocons file reuses short gradient ids ("a", "b", …), so
 // two icons inlined in the same root would paint with each other's gradients.
 
@@ -7,7 +7,7 @@ import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
 import { conditionIcon } from './conditions';
 import { ICONS } from './icons';
 
-export class WallWeatherIcon extends LitElement {
+export class SlateWeatherIcon extends LitElement {
   static override properties = {
     condition: {},
     night: { type: Boolean },
@@ -55,10 +55,10 @@ export class WallWeatherIcon extends LitElement {
   `;
 }
 
-if (!customElements.get('wall-weather-icon')) customElements.define('wall-weather-icon', WallWeatherIcon);
+if (!customElements.get('slate-weather-icon')) customElements.define('slate-weather-icon', SlateWeatherIcon);
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wall-weather-icon': WallWeatherIcon;
+    'slate-weather-icon': SlateWeatherIcon;
   }
 }

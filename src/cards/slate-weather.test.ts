@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createFakeHass, type FakeHassOptions } from '../ha/fake-hass';
 import type { ForecastEntry } from '../weather/forecast';
-import './wall-weather';
-import type { WallWeather, WallWeatherConfig } from './wall-weather';
+import './slate-weather';
+import type { SlateWeather, SlateWeatherConfig } from './slate-weather';
 
 const NOW = new Date(2026, 9, 18, 10, 0); // Sunday
 const day = (d: number, condition: string, hi: number, lo: number, pop?: number): ForecastEntry => ({
@@ -33,16 +33,16 @@ const home = {
   },
 };
 
-let el: WallWeather | undefined;
+let el: SlateWeather | undefined;
 
-async function mount(config: Partial<WallWeatherConfig> = {}, hassOpts: FakeHassOptions = {}) {
+async function mount(config: Partial<SlateWeatherConfig> = {}, hassOpts: FakeHassOptions = {}) {
   const hass = createFakeHass({
     entities: { 'weather.forecast_home': home, 'sun.sun': { state: 'above_horizon' } },
     forecasts: { 'weather.forecast_home': forecast },
     ...hassOpts,
   });
-  el = document.createElement('wall-weather');
-  el.setConfig({ type: 'custom:wall-weather', entity: 'weather.forecast_home', ...config });
+  el = document.createElement('slate-weather');
+  el.setConfig({ type: 'custom:slate-weather', entity: 'weather.forecast_home', ...config });
   el.hass = hass;
   document.body.append(el);
   await settle();
@@ -67,7 +67,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('wall-weather', () => {
+describe('slate-weather', () => {
   it('subscribes to the daily forecast for its entity', async () => {
     const { hass } = await mount();
     expect(hass.subscriptions.map((s) => s.message)).toEqual([
@@ -118,7 +118,7 @@ describe('wall-weather', () => {
 
   it('holds its icons still while dimmed', async () => {
     await mount();
-    const animated = () => $$('wall-weather-icon').map((i) => (i as unknown as { animated: boolean }).animated);
+    const animated = () => $$('slate-weather-icon').map((i) => (i as unknown as { animated: boolean }).animated);
     expect(animated().every(Boolean)).toBe(true);
     el!.dimmed = true;
     await settle();
@@ -168,8 +168,8 @@ describe('wall-weather', () => {
     [{ forecast_days: -1 }, /forecast_days/],
     [{ current: ['pollen'] }, /pollen/],
   ])('rejects bad config %j', (bad, message) => {
-    const c = document.createElement('wall-weather');
-    expect(() => c.setConfig({ type: 'custom:wall-weather', entity: 'weather.x', ...(bad as object) } as never)).toThrow(
+    const c = document.createElement('slate-weather');
+    expect(() => c.setConfig({ type: 'custom:slate-weather', entity: 'weather.x', ...(bad as object) } as never)).toThrow(
       message,
     );
   });

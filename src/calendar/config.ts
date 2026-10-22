@@ -19,7 +19,7 @@ export interface CalendarSource {
 }
 
 /** The card's YAML, as the user writes it. */
-export interface WallCalendarConfig {
+export interface SlateCalendarConfig {
   type: string;
   calendars: (CalendarSource | string)[];
   weeks?: number;
@@ -68,14 +68,14 @@ const friendlyName = (entity: string) =>
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
 /** Fills defaults and rejects configs HA should show an error card for. */
-export function resolveConfig(config: WallCalendarConfig): ResolvedCalendarConfig {
+export function resolveConfig(config: SlateCalendarConfig): ResolvedCalendarConfig {
   if (!config || !Array.isArray(config.calendars) || config.calendars.length === 0) {
-    throw new Error('wall-calendar: `calendars` must list at least one calendar entity');
+    throw new Error('slate-calendar: `calendars` must list at least one calendar entity');
   }
   const calendars = config.calendars.map((c, i) => {
     const src = typeof c === 'string' ? { entity: c } : c;
     if (!src.entity?.startsWith('calendar.')) {
-      throw new Error(`wall-calendar: "${src.entity}" is not a calendar entity`);
+      throw new Error(`slate-calendar: "${src.entity}" is not a calendar entity`);
     }
     return {
       entity: src.entity,
@@ -84,13 +84,13 @@ export function resolveConfig(config: WallCalendarConfig): ResolvedCalendarConfi
     };
   });
   const weeks = config.weeks ?? 3;
-  if (!Number.isInteger(weeks) || weeks < 1) throw new Error('wall-calendar: `weeks` must be a whole number ≥ 1');
+  if (!Number.isInteger(weeks) || weeks < 1) throw new Error('slate-calendar: `weeks` must be a whole number ≥ 1');
   const firstDay = config.first_day ?? 'sunday';
   if (firstDay !== 'sunday' && firstDay !== 'monday') {
-    throw new Error('wall-calendar: `first_day` must be sunday or monday');
+    throw new Error('slate-calendar: `first_day` must be sunday or monday');
   }
   const titleLines = config.title_lines ?? 2;
-  if (![1, 2, 3].includes(titleLines)) throw new Error('wall-calendar: `title_lines` must be 1, 2 or 3');
+  if (![1, 2, 3].includes(titleLines)) throw new Error('slate-calendar: `title_lines` must be 1, 2 or 3');
   return {
     calendars,
     weeks,

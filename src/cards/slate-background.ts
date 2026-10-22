@@ -1,6 +1,6 @@
-// <wall-background>: a full-bleed photo that cross-fades to the next image
+// <slate-background>: a full-bleed photo that cross-fades to the next image
 // only once it has fully loaded, so the screen never flashes blank. Meant to
-// sit behind wall-layout's content (wall-layout creates it from its
+// sit behind slate-layout's content (slate-layout creates it from its
 // `background:` option); it fills its positioned parent.
 
 import { css, html, LitElement, nothing, type PropertyValues } from 'lit';
@@ -8,7 +8,7 @@ import type { BackgroundConfig } from '../background/sources';
 import { backgroundUrl, validateBackground } from '../background/sources';
 import type { HomeAssistant } from '../ha/types';
 
-export type WallBackgroundConfig = BackgroundConfig & { type?: string; fade_seconds?: number };
+export type SlateBackgroundConfig = BackgroundConfig & { type?: string; fade_seconds?: number };
 
 const preload = (url: string) =>
   new Promise<void>((resolve, reject) => {
@@ -18,7 +18,7 @@ const preload = (url: string) =>
     img.src = url;
   });
 
-export class WallBackground extends LitElement {
+export class SlateBackground extends LitElement {
   static override properties = {
     hass: { attribute: false },
     _config: { state: true },
@@ -28,7 +28,7 @@ export class WallBackground extends LitElement {
   };
 
   declare hass?: HomeAssistant;
-  declare _config?: WallBackgroundConfig;
+  declare _config?: SlateBackgroundConfig;
   /** Two stacked images; the active one is opaque, the other fades out. */
   declare _layers: [string | undefined, string | undefined];
   declare _active: 0 | 1;
@@ -47,7 +47,7 @@ export class WallBackground extends LitElement {
     this._tick = 0;
   }
 
-  setConfig(config: WallBackgroundConfig): void {
+  setConfig(config: SlateBackgroundConfig): void {
     validateBackground(config);
     this._config = config;
     this._restartTimer();
@@ -90,7 +90,7 @@ export class WallBackground extends LitElement {
         this._active = next;
       },
       (err: unknown) => {
-        console.warn('wall-background:', err);
+        console.warn('slate-background:', err);
         if (this._wanted === url) this._wanted = undefined; // allow a retry next tick
       },
     );
@@ -115,7 +115,7 @@ export class WallBackground extends LitElement {
       position: absolute;
       inset: 0;
       overflow: hidden;
-      background: var(--wall-background-color, #111);
+      background: var(--slate-background-color, #111);
     }
     img {
       position: absolute;
@@ -133,12 +133,12 @@ export class WallBackground extends LitElement {
   `;
 }
 
-if (!customElements.get('wall-background')) {
-  customElements.define('wall-background', WallBackground);
+if (!customElements.get('slate-background')) {
+  customElements.define('slate-background', SlateBackground);
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wall-background': WallBackground;
+    'slate-background': SlateBackground;
   }
 }

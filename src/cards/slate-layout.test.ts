@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createFakeHass } from '../ha/fake-hass';
 import type { HomeAssistant } from '../ha/types';
-import './wall-calendar';
-import './wall-clock';
-import './wall-layout';
-import type { LayoutMeasurement, LayoutRow, WallLayout, WallLayoutConfig } from './wall-layout';
-import './wall-weather';
+import './slate-calendar';
+import './slate-clock';
+import './slate-layout';
+import type { LayoutMeasurement, LayoutRow, SlateLayout, SlateLayoutConfig } from './slate-layout';
+import './slate-weather';
 
 const hass = createFakeHass({
   calendars: { 'calendar.alex': [] },
@@ -16,18 +16,18 @@ const hass = createFakeHass({
   forecasts: { 'weather.home': [] },
 });
 
-const config = (extra: Partial<WallLayoutConfig> = {}): WallLayoutConfig => ({
-  type: 'custom:wall-layout',
+const config = (extra: Partial<SlateLayoutConfig> = {}): SlateLayoutConfig => ({
+  type: 'custom:slate-layout',
   background: { entity: 'sensor.unsplash_background' },
   top: [
-    [{ type: 'custom:wall-clock' }, { type: 'custom:wall-weather', entity: 'weather.home', show: 'current' }],
-    { cards: [{ type: 'custom:wall-weather', entity: 'weather.home', show: 'forecast' }], collapsible: true },
+    [{ type: 'custom:slate-clock' }, { type: 'custom:slate-weather', entity: 'weather.home', show: 'current' }],
+    { cards: [{ type: 'custom:slate-weather', entity: 'weather.home', show: 'forecast' }], collapsible: true },
   ],
-  bottom: { type: 'custom:wall-calendar', calendars: ['calendar.alex'] },
+  bottom: { type: 'custom:slate-calendar', calendars: ['calendar.alex'] },
   ...extra,
 });
 
-let el: WallLayout | undefined;
+let el: SlateLayout | undefined;
 let measured: LayoutMeasurement;
 
 async function settle() {
@@ -38,7 +38,7 @@ async function settle() {
 }
 
 async function mount(cfg = config(), h: HomeAssistant = hass) {
-  el = document.createElement('wall-layout');
+  el = document.createElement('slate-layout');
   // 1080 wide; 1888 usable after padding; rows 300 + 200 with a 16 gap; calendar wants 900.
   measured = { width: 1080, height: 1888, rowHeights: [300, 200], rowGap: 16, bottomNatural: 900 };
   el.measure = () => measured;
@@ -57,7 +57,7 @@ const rows = () =>
     (a, b) => Number(a.dataset.index) - Number(b.dataset.index),
   );
 const groupOf = (row: HTMLElement) => row.parentElement!.className;
-const calendar = () => root().querySelector('.bottom > wall-calendar') as HTMLElement & { availableHeight?: number };
+const calendar = () => root().querySelector('.bottom > slate-calendar') as HTMLElement & { availableHeight?: number };
 
 afterEach(() => {
   el?.remove();
@@ -65,14 +65,14 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('wall-layout', () => {
+describe('slate-layout', () => {
   it('builds its cards and hands every one of them hass', async () => {
     await mount();
     expect(rows().map((r) => [...r.children].map((c) => c.localName))).toEqual([
-      ['wall-clock', 'wall-weather'],
-      ['wall-weather'],
+      ['slate-clock', 'slate-weather'],
+      ['slate-weather'],
     ]);
-    const children = [...root().querySelectorAll('wall-clock, wall-weather, wall-calendar, wall-background')];
+    const children = [...root().querySelectorAll('slate-clock, slate-weather, slate-calendar, slate-background')];
     expect(children).toHaveLength(5);
     for (const c of children) expect((c as unknown as { hass: unknown }).hass).toBe(hass);
   });
@@ -80,23 +80,23 @@ describe('wall-layout', () => {
   it('docks the calendar by default: photo and top rows above it, calendar on black below', async () => {
     await mount();
     const photo = root().querySelector('.screen.docked > .photo')!;
-    expect(photo.querySelector(':scope > wall-background')).not.toBeNull();
+    expect(photo.querySelector(':scope > slate-background')).not.toBeNull();
     expect(photo.querySelector(':scope > .top')).not.toBeNull();
     const bottom = root().querySelector<HTMLElement>('.screen.docked > .bottom')!;
-    expect(bottom.querySelector('wall-calendar')).not.toBeNull();
+    expect(bottom.querySelector('slate-calendar')).not.toBeNull();
     // The calendar's panel styling is switched to solid, square, unblurred
     // black, with tighter padding and gaps since there's no card edge to clear.
     const styles = getComputedStyle(bottom);
-    expect(styles.getPropertyValue('--wall-panel-background').trim()).toBe('#000');
-    expect(styles.getPropertyValue('--wall-panel-radius').trim()).toBe('0');
-    expect(styles.getPropertyValue('--wall-calendar-padding').trim()).toBe('0.4cqw');
-    expect(styles.getPropertyValue('--wall-calendar-column-gap').trim()).toBe('0.4cqw');
+    expect(styles.getPropertyValue('--slate-panel-background').trim()).toBe('#000');
+    expect(styles.getPropertyValue('--slate-panel-radius').trim()).toBe('0');
+    expect(styles.getPropertyValue('--slate-calendar-padding').trim()).toBe('0.4cqw');
+    expect(styles.getPropertyValue('--slate-calendar-column-gap').trim()).toBe('0.4cqw');
   });
 
   it('can float the calendar as a card over a full-screen photo instead', async () => {
     await mount(config({ bottom_style: 'floating' }));
     expect(root().querySelector('.photo')).toBeNull();
-    expect(root().querySelector('.screen.floating > wall-background')).not.toBeNull();
+    expect(root().querySelector('.screen.floating > slate-background')).not.toBeNull();
     expect(root().querySelector('.screen.floating > .header')).not.toBeNull();
     const stack = root().querySelector('.screen.floating > .stack')!;
     expect([...stack.children].map((c) => c.className)).toEqual(['top', 'bottom']);
@@ -105,8 +105,8 @@ describe('wall-layout', () => {
   it('sets the shared text unit from its width, and the global scale', async () => {
     await mount(config({ scale: 1.2 }));
     const screen = root().querySelector<HTMLElement>('.screen')!;
-    expect(screen.style.getPropertyValue('--wall-unit')).toBe('10.8px');
-    expect(screen.style.getPropertyValue('--wall-scale')).toBe('1.2');
+    expect(screen.style.getPropertyValue('--slate-unit')).toBe('10.8px');
+    expect(screen.style.getPropertyValue('--slate-scale')).toBe('1.2');
   });
 
   it('pins the forecast row to the top of the screen by default, with the clock on the calendar', async () => {
@@ -129,11 +129,11 @@ describe('wall-layout', () => {
     (cfg.top![1] as LayoutRow).placement = 'hidden';
     await mount(cfg);
     expect(rows()).toHaveLength(1);
-    expect(root().querySelectorAll('wall-weather')).toHaveLength(1);
+    expect(root().querySelectorAll('slate-weather')).toHaveLength(1);
     expect(root().querySelector('.header')).toBeNull();
     // Only the clock row counts: 1888 − 300 − 24.
     measured.rowHeights = [300];
-    calendar().dispatchEvent(new CustomEvent('wall-natural-height', { detail: 900, bubbles: true, composed: true }));
+    calendar().dispatchEvent(new CustomEvent('slate-natural-height', { detail: 900, bubbles: true, composed: true }));
     await settle();
     expect(calendar().availableHeight).toBe(1564);
   });
@@ -148,13 +148,13 @@ describe('wall-layout', () => {
   it('folds the forecast row away when the calendar needs the room, and brings it back', async () => {
     await mount();
     measured.bottomNatural = 1400;
-    calendar().dispatchEvent(new CustomEvent('wall-natural-height', { detail: 1400, bubbles: true, composed: true }));
+    calendar().dispatchEvent(new CustomEvent('slate-natural-height', { detail: 1400, bubbles: true, composed: true }));
     await settle();
     expect(rows()[1]!.classList.contains('collapsed')).toBe(true);
     expect(calendar().availableHeight).toBe(1888 - 300 - 24);
 
     measured.bottomNatural = 600;
-    calendar().dispatchEvent(new CustomEvent('wall-natural-height', { detail: 600, bubbles: true, composed: true }));
+    calendar().dispatchEvent(new CustomEvent('slate-natural-height', { detail: 600, bubbles: true, composed: true }));
     await settle();
     expect(rows()[1]!.classList.contains('collapsed')).toBe(false);
   });
@@ -163,7 +163,7 @@ describe('wall-layout', () => {
     const night = { start: '22:00', end: '06:00', brightness: 0.25 };
     const dimOpacity = () => root().querySelector<HTMLElement>('.dim')!.style.opacity;
     const weatherDimmed = () =>
-      [...root().querySelectorAll('wall-weather')].map((w) => (w as unknown as { dimmed: boolean }).dimmed);
+      [...root().querySelectorAll('slate-weather')].map((w) => (w as unknown as { dimmed: boolean }).dimmed);
 
     it('dims the screen and stills weather icons during the window', async () => {
       vi.useFakeTimers({ toFake: ['Date'] });
@@ -241,7 +241,7 @@ describe('wall-layout', () => {
     [{ bottom_style: 'sideways' }, /bottom_style/],
     [{ top: [{ cards: [], placement: 'middle' }] }, /placement/],
   ])('rejects bad config %j', (bad, message) => {
-    const l = document.createElement('wall-layout');
-    expect(() => l.setConfig({ ...config(), ...(bad as object) } as WallLayoutConfig)).toThrow(message);
+    const l = document.createElement('slate-layout');
+    expect(() => l.setConfig({ ...config(), ...(bad as object) } as SlateLayoutConfig)).toThrow(message);
   });
 });

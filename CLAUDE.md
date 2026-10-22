@@ -1,4 +1,4 @@
-# Wall Cards — Instructions for Claude
+# Slate — Instructions for Claude
 
 Project context and every design decision live in [PLANNING.md](PLANNING.md).
 Read it before changing behaviour; record new decisions there.
@@ -8,7 +8,7 @@ Read it before changing behaviour; record new decisions there.
 - `pnpm test` — Vitest (happy-dom, pinned to `America/Los_Angeles` so date
   tests hit real DST transitions)
 - `pnpm typecheck` — `tsc --noEmit`
-- `pnpm build` — single ES module at `dist/wall-cards.js` (what HA loads)
+- `pnpm build` — single ES module at `dist/slate.js` (what HA loads)
 - `pnpm storybook` — component gallery at http://127.0.0.1:6006
 - `pnpm deploy:dev` — build and copy to HA over the Samba share (see README)
 

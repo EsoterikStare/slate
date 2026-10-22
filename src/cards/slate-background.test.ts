@@ -1,18 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createFakeHass } from '../ha/fake-hass';
 import type { HomeAssistant } from '../ha/types';
-import './wall-background';
-import type { WallBackground, WallBackgroundConfig } from './wall-background';
+import './slate-background';
+import type { SlateBackground, SlateBackgroundConfig } from './slate-background';
 
-let el: WallBackground | undefined;
+let el: SlateBackground | undefined;
 
 /** Image loading is the network boundary: resolve unless the URL is marked broken. */
 const fakeLoad = vi.fn(async (url: string) => {
   if (url.includes('broken')) throw new Error('404');
 });
 
-async function mount(config: WallBackgroundConfig, hass?: HomeAssistant) {
-  el = document.createElement('wall-background');
+async function mount(config: SlateBackgroundConfig, hass?: HomeAssistant) {
+  el = document.createElement('slate-background');
   el.loadImage = fakeLoad;
   el.setConfig(config);
   el.hass = hass;
@@ -38,7 +38,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('wall-background', () => {
+describe('slate-background', () => {
   it('shows the entity’s picture once it has loaded', async () => {
     await mount({ entity: 'sensor.unsplash_background' }, unsplash('/img/1'));
     expect(fakeLoad).toHaveBeenCalledWith('/img/1');

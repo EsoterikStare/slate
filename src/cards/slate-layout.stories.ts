@@ -1,15 +1,15 @@
-// The whole kiosk at 1080×1920: wall-layout composing background, clock,
+// The whole kiosk at 1080×1920: slate-layout composing background, clock,
 // weather and calendar, configured the way the real dashboard YAML would be.
 
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 import { createFakeHass } from '../ha/fake-hass';
 import { calendarConfig, calendars, forecast, photos, weatherEntity } from '../stories/fixtures';
-import './wall-calendar';
-import './wall-clock';
-import './wall-layout';
-import type { WallLayoutConfig } from './wall-layout';
-import './wall-weather';
+import './slate-calendar';
+import './slate-clock';
+import './slate-layout';
+import type { SlateLayoutConfig } from './slate-layout';
+import './slate-weather';
 
 interface Args {
   weeks: number;
@@ -71,8 +71,8 @@ const meta: Meta<Args> = {
     });
     const now = new Date();
     const hhmm = (d: Date) => `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-    const config: WallLayoutConfig = {
-      type: 'custom:wall-layout',
+    const config: SlateLayoutConfig = {
+      type: 'custom:slate-layout',
       scale: args.scale,
       bottom_style: args.bottom_style,
       background: { urls: photos, interval: 0.25, fade_seconds: 3 },
@@ -81,21 +81,21 @@ const meta: Meta<Args> = {
         : undefined,
       top: [
         [
-          { type: 'custom:wall-clock' },
-          { type: 'custom:wall-weather', entity: 'weather.forecast_home', show: 'current', current: ['feels_like', 'precipitation'] },
+          { type: 'custom:slate-clock' },
+          { type: 'custom:slate-weather', entity: 'weather.forecast_home', show: 'current', current: ['feels_like', 'precipitation'] },
         ],
         {
-          cards: [{ type: 'custom:wall-weather', entity: 'weather.forecast_home', show: 'forecast', forecast_days: 5 }],
+          cards: [{ type: 'custom:slate-weather', entity: 'weather.forecast_home', show: 'forecast', forecast_days: 5 }],
           collapsible: true,
           placement: args.forecast_placement,
         },
       ],
       bottom: { ...calendarConfig, weeks: args.weeks },
     };
-    const el = document.createElement('wall-layout');
+    const el = document.createElement('slate-layout');
     el.setConfig(config);
     el.hass = hass;
-    return html`<div style="width: 1080px; --wall-layout-height: 1920px">${el}</div>`;
+    return html`<div style="width: 1080px; --slate-layout-height: 1920px">${el}</div>`;
   },
 };
 export default meta;

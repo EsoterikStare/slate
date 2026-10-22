@@ -1,4 +1,4 @@
-# Wall Cards
+# Slate
 
 Custom Home Assistant dashboard cards for a portrait, wall-mounted kiosk: a
 week-row calendar running edge to edge along the bottom of the screen on
@@ -8,10 +8,10 @@ card over a full-screen photo.)
 
 | Card | What it does |
 | --- | --- |
-| `custom:wall-layout` | Full-screen composition: background, top rows stacked on a bottom card, night dimming, reload watchdog |
-| `custom:wall-calendar` | Week rows that grow upward with the busiest day; collapses far-future weeks to fit |
-| `custom:wall-clock` | Large time and date |
-| `custom:wall-weather` | Current conditions and/or a daily forecast strip, with animated Meteocons |
+| `custom:slate-layout` | Full-screen composition: background, top rows stacked on a bottom card, night dimming, reload watchdog |
+| `custom:slate-calendar` | Week rows that grow upward with the busiest day; collapses far-future weeks to fit |
+| `custom:slate-clock` | Large time and date |
+| `custom:slate-weather` | Current conditions and/or a daily forecast strip, with animated Meteocons |
 
 Design decisions and their reasons are in [PLANNING.md](PLANNING.md).
 
@@ -21,23 +21,23 @@ Design decisions and their reasons are in [PLANNING.md](PLANNING.md).
 > (`v0.1.0-alpha.N`), so they're only offered to people who opt in.
 
 **Through HACS:** HACS → ⋮ → *Custom repositories* → add
-`https://github.com/EsoterikStare/wall-cards` as type *Dashboard*. Open
-**Wall Cards**, choose *Download*, and tick **Show beta versions** in the
+`https://github.com/EsoterikStare/slate` as type *Dashboard*. Open
+**Slate**, choose *Download*, and tick **Show beta versions** in the
 download dialog. HACS calls every pre-release a "beta", and while only
 pre-releases exist, nothing is installable without it. HACS adds the
 dashboard resource for you, and offers new releases as updates.
 
-The browser console prints the running version (`WALL-CARDS 0.1.0-alpha.1`) on
+The browser console prints the running version (`SLATE 0.1.0-alpha.1`) on
 load, which is handy for checking what the kiosk is actually running.
 
-**By hand:** copy `dist/wall-cards.js` (from `pnpm build`, or a release) to
-`/config/www/wall-cards/` and add a dashboard resource (Settings → Dashboards →
+**By hand:** copy `dist/slate.js` (from `pnpm build`, or a release) to
+`/config/www/slate/` and add a dashboard resource (Settings → Dashboards →
 ⋮ → Resources) of type *JavaScript module* pointing at
-`/local/wall-cards/wall-cards.js`.
+`/local/slate/slate.js`.
 
 ## Dashboard
 
-A dashboard with one panel view holding `wall-layout`. This is the existing
+A dashboard with one panel view holding `slate-layout`. This is the existing
 setup (7 iCloud calendars, Unsplash background, Met.no weather) translated:
 
 ```yaml
@@ -47,7 +47,7 @@ views:
   - title: Wall
     type: panel
     cards:
-      - type: custom:wall-layout
+      - type: custom:slate-layout
         scale: 1                       # global text size
         background:
           entity: sensor.unsplash_background
@@ -59,21 +59,21 @@ views:
         gap: 24                        # px between the weather and the calendar
         bottom_style: docked           # or floating: translucent card over a full-screen photo
         top:
-          - - type: custom:wall-clock
+          - - type: custom:slate-clock
               time_format: 12
-            - type: custom:wall-weather
+            - type: custom:slate-weather
               entity: weather.forecast_home
               show: current
               current: [feels_like, precipitation]
           - cards:
-              - type: custom:wall-weather
+              - type: custom:slate-weather
                 entity: weather.forecast_home
                 show: forecast
                 forecast_days: 5
             collapsible: true          # folds away first when the calendar needs room
             placement: top             # top of screen (default for the forecast), stack (on the calendar), or hidden
         bottom:
-          type: custom:wall-calendar
+          type: custom:slate-calendar
           weeks: 3
           first_day: sunday
           min_events_per_day: 2
@@ -94,26 +94,26 @@ Every card takes `scale:` (the whole card) and `text:` (individual pieces);
 the final size is `layout scale × card scale × text role`. For example:
 
 ```yaml
-type: custom:wall-calendar
+type: custom:slate-calendar
 scale: 1.1
 text: { event_title: 1.2, event_time: 0.9 }
 ```
 
 | Card | `text:` roles |
 | --- | --- |
-| wall-calendar | `legend`, `weekday`, `date_number`, `event_time`, `event_title`, `all_day`, `more` |
-| wall-clock | `time`, `date` |
-| wall-weather | `temperature`, `condition`, `high_low`, `details`, `forecast_day`, `forecast_temp` |
+| slate-calendar | `legend`, `weekday`, `date_number`, `event_time`, `event_title`, `all_day`, `more` |
+| slate-clock | `time`, `date` |
+| slate-weather | `temperature`, `condition`, `high_low`, `details`, `forecast_day`, `forecast_temp` |
 
 ### Other options
 
-- **wall-calendar:** `title_lines` (1–3, default 2), `month_on_first` (show
+- **slate-calendar:** `title_lines` (1–3, default 2), `month_on_first` (show
   "Nov" instead of "1" on the 1st; default on), `time_format` (12/24),
   `relative_day_names` (Today/Tomorrow), `show_legend`, `today_color`,
   `refresh_interval` (minutes).
-- **wall-clock:** `show_seconds`, `show_meridiem`, `show_date`, `date_format`
+- **slate-clock:** `show_seconds`, `show_meridiem`, `show_date`, `date_format`
   (Intl options, e.g. `{ weekday: long, month: long, day: numeric }`).
-- **wall-weather:** `unit` (F/C), `forecast_precipitation`, `animations`,
+- **slate-weather:** `unit` (F/C), `forecast_precipitation`, `animations`,
   `sun_entity` (night icons; default `sun.sun`).
 - **background:** `entity`, or `url` (with `interval` to re-fetch a random-image
   URL), or `urls` + `interval` (minutes) to rotate; `fade_seconds`.
@@ -147,14 +147,14 @@ HA restart — `reload_after` covers that last one.
 pnpm install
 pnpm test          # unit + component tests
 pnpm storybook     # every card, plus the full 1080×1920 kiosk, with fake HA data
-pnpm build         # dist/wall-cards.js
+pnpm build         # dist/slate.js
 ```
 
 **Against your real HA, live:** run `pnpm dev`, allow port 5173 through
 Windows Firewall (private networks only):
 
 ```powershell
-New-NetFirewallRule -DisplayName "Vite dev (wall-cards)" -Direction Inbound -Protocol TCP -LocalPort 5173 -Profile Private -Action Allow
+New-NetFirewallRule -DisplayName "Vite dev (slate)" -Direction Inbound -Protocol TCP -LocalPort 5173 -Profile Private -Action Allow
 ```
 
 then add a JavaScript module resource `http://<this-pc-ip>:5173/src/index.ts`
@@ -166,8 +166,8 @@ resource when you're done, and never keep it alongside a HACS-installed copy
 it may need LAN connections allowed.
 
 **A real build on the kiosk:** `pnpm deploy:dev` builds and copies the bundle
-to `\\homeassistant.local\config\www\wall-cards` through the Samba share
-add-on (override with `WALL_DEPLOY_DIR`), then prints the resource URL with a
+to `\\homeassistant.local\config\www\slate` through the Samba share
+add-on (override with `SLATE_DEPLOY_DIR`), then prints the resource URL with a
 `?v=` stamp so the Pi doesn't keep a cached copy.
 
 Weather icons: [Meteocons](https://github.com/basmilius/weather-icons) by Bas

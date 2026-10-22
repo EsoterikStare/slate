@@ -1,5 +1,5 @@
 {
-  "name": "wall-cards",
+  "name": "slate",
   "version": "0.1.0-alpha.1",
   "private": true,
   "description": "Custom Home Assistant cards for a portrait wall-mounted kiosk dashboard",

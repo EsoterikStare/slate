@@ -1,4 +1,4 @@
-// How wall-layout shares the screen height between the top rows
+// How slate-layout shares the screen height between the top rows
 // (clock/weather) and the bottom card (calendar). They form one block,
 // anchored to the bottom of the screen with the top rows sitting directly on
 // the calendar, and only as tall as its content — the background photo fills
@@ -42,7 +42,7 @@ export type RowPlacement = 'top' | 'stack' | 'hidden';
  */
 export function defaultPlacement(cards: { type: string; [key: string]: unknown }[]): 'top' | 'stack' {
   const forecastOnly =
-    cards.length > 0 && cards.every((c) => c.type === 'custom:wall-weather' && c.show === 'forecast');
+    cards.length > 0 && cards.every((c) => c.type === 'custom:slate-weather' && c.show === 'forecast');
   return forecastOnly ? 'top' : 'stack';
 }
 

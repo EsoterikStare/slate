@@ -33,7 +33,7 @@ export function backgroundUrl(c: BackgroundConfig, hass: HomeAssistant | undefin
   if (c.urls) return c.urls[tick % c.urls.length];
   if (c.url) {
     if (!c.interval) return c.url;
-    return `${c.url}${c.url.includes('?') ? '&' : '?'}wall_t=${tick}`;
+    return `${c.url}${c.url.includes('?') ? '&' : '?'}slate_t=${tick}`;
   }
   return undefined;
 }

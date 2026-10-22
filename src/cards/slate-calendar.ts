@@ -1,11 +1,11 @@
-// <wall-calendar>: week-row calendar anchored to the bottom of its space.
+// <slate-calendar>: week-row calendar anchored to the bottom of its space.
 // Layout decisions live in ../calendar/layout.ts; this element fetches,
 // measures its own rendered pieces, and draws whatever plan comes back.
 
 import { css, html, LitElement, nothing, type PropertyValues, type TemplateResult } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
-import type { ResolvedCalendarConfig, WallCalendarConfig } from '../calendar/config';
+import type { ResolvedCalendarConfig, SlateCalendarConfig } from '../calendar/config';
 import { resolveConfig } from '../calendar/config';
 import { addDays, buildWeeks, dayDiff, startOfDay } from '../calendar/dates';
 import type { CalendarEvent } from '../calendar/events';
@@ -25,7 +25,7 @@ function stripes(colors: string[], direction: 'to bottom' | 'to right'): string 
   return `linear-gradient(${direction}, ${stops.join(', ')})`;
 }
 
-export class WallCalendar extends LitElement {
+export class SlateCalendar extends LitElement {
   static override properties = {
     hass: { attribute: false },
     availableHeight: { attribute: false },
@@ -39,7 +39,7 @@ export class WallCalendar extends LitElement {
 
   declare hass?: HomeAssistant;
   /**
-   * Height this card may use, set by wall-layout. Unset means "as tall as it
+   * Height this card may use, set by slate-layout. Unset means "as tall as it
    * needs" and nothing collapses.
    */
   declare availableHeight?: number;
@@ -54,8 +54,8 @@ export class WallCalendar extends LitElement {
 
   /**
    * Height the card would take with nothing collapsed, given its current
-   * events and measured sizes. wall-layout uses it to decide how much room to
-   * hand over; it's announced with a `wall-natural-height` event on change.
+   * events and measured sizes. slate-layout uses it to decide how much room to
+   * hand over; it's announced with a `slate-natural-height` event on change.
    */
   naturalHeight = 0;
 
@@ -73,7 +73,7 @@ export class WallCalendar extends LitElement {
     this._now = new Date();
   }
 
-  setConfig(config: WallCalendarConfig): void {
+  setConfig(config: SlateCalendarConfig): void {
     const resolved = resolveConfig(config);
     this._scaleVars = textScaleVars(resolved.scale, resolved.text);
     this._config = resolved;
@@ -84,9 +84,9 @@ export class WallCalendar extends LitElement {
     return (this._config?.weeks ?? 3) * 3 + 1;
   }
 
-  static getStubConfig(hass: HomeAssistant): WallCalendarConfig {
+  static getStubConfig(hass: HomeAssistant): SlateCalendarConfig {
     const calendars = Object.keys(hass.states).filter((id) => id.startsWith('calendar.'));
-    return { type: 'custom:wall-calendar', calendars: calendars.slice(0, 3) };
+    return { type: 'custom:slate-calendar', calendars: calendars.slice(0, 3) };
   }
 
   override connectedCallback(): void {
@@ -141,7 +141,7 @@ export class WallCalendar extends LitElement {
     const entities = this._config!.calendars.map((c) => c.entity);
     const result = await fetchEvents(this.hass!, entities, start, end);
     if (seq !== this._fetchSeq) return; // a newer fetch started meanwhile
-    if (result.failed.length) console.warn('wall-calendar: failed to load', result.failed);
+    if (result.failed.length) console.warn('slate-calendar: failed to load', result.failed);
     this._events = result.events;
     this._failed = result.failed;
   }
@@ -212,7 +212,7 @@ export class WallCalendar extends LitElement {
       this.naturalHeight = natural;
       // Announced after render so listeners can read the new layout.
       void this.updateComplete.then(() =>
-        this.dispatchEvent(new CustomEvent('wall-natural-height', { detail: natural, bubbles: true, composed: true })),
+        this.dispatchEvent(new CustomEvent('slate-natural-height', { detail: natural, bubbles: true, composed: true })),
       );
     }
 
@@ -352,19 +352,19 @@ export class WallCalendar extends LitElement {
   static override styles = css`
     :host {
       display: block;
-      color: var(--wall-text-color, #fff);
-      font-family: var(--wall-font-family, var(--primary-font-family, Roboto, system-ui, sans-serif));
+      color: var(--slate-text-color, #fff);
+      font-family: var(--slate-font-family, var(--primary-font-family, Roboto, system-ui, sans-serif));
     }
     .card {
       container-type: inline-size;
       position: relative;
       box-sizing: border-box;
-      /* Overridable: wall-layout tightens both when docked edge to edge. */
-      --card-pad: var(--wall-calendar-padding, 1.5cqw);
+      /* Overridable: slate-layout tightens both when docked edge to edge. */
+      --card-pad: var(--slate-calendar-padding, 1.5cqw);
       padding: var(--card-pad);
-      background: var(--wall-panel-background, rgba(0, 0, 0, 0.45));
-      backdrop-filter: blur(var(--wall-panel-blur, 4px));
-      border-radius: var(--wall-panel-radius, 16px);
+      background: var(--slate-panel-background, rgba(0, 0, 0, 0.45));
+      backdrop-filter: blur(var(--slate-panel-blur, 4px));
+      border-radius: var(--slate-panel-radius, 16px);
       overflow: hidden;
     }
     .legend {
@@ -396,7 +396,7 @@ export class WallCalendar extends LitElement {
     .row {
       display: grid;
       grid-template-columns: repeat(7, minmax(0, 1fr));
-      column-gap: var(--wall-calendar-column-gap, 0.8cqw);
+      column-gap: var(--slate-calendar-column-gap, 0.8cqw);
     }
     .head {
       grid-row: 1;
@@ -450,7 +450,7 @@ export class WallCalendar extends LitElement {
       }
     }
     .past {
-      opacity: var(--wall-past-opacity, 0.45);
+      opacity: var(--slate-past-opacity, 0.45);
     }
     .bar-slot {
       padding-bottom: 0.4cqw;
@@ -493,7 +493,7 @@ export class WallCalendar extends LitElement {
     .event {
       position: relative;
       padding: 0.35em 0.4em 0.35em 0.7em;
-      background: var(--wall-event-background, rgba(20, 20, 20, 0.75));
+      background: var(--slate-event-background, rgba(20, 20, 20, 0.75));
       border-radius: 0.25em;
       overflow: hidden;
       white-space: nowrap;
@@ -522,7 +522,7 @@ export class WallCalendar extends LitElement {
       overflow: hidden;
     }
     .ended {
-      opacity: var(--wall-past-opacity, 0.45);
+      opacity: var(--slate-past-opacity, 0.45);
     }
     .more {
       ${roleFontSize('more', 1.6)}
@@ -559,19 +559,19 @@ function sameMetrics(a: RowMetrics & { chrome: number }, b: RowMetrics & { chrom
   return true;
 }
 
-if (!customElements.get('wall-calendar')) {
-  customElements.define('wall-calendar', WallCalendar);
+if (!customElements.get('slate-calendar')) {
+  customElements.define('slate-calendar', SlateCalendar);
   const w = window as unknown as { customCards?: unknown[] };
   w.customCards = w.customCards ?? [];
   w.customCards.push({
-    type: 'wall-calendar',
-    name: 'Wall Calendar',
+    type: 'slate-calendar',
+    name: 'Slate Calendar',
     description: 'Week-row calendar for wall displays, anchored to the bottom and growing upward.',
   });
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wall-calendar': WallCalendar;
+    'slate-calendar': SlateCalendar;
   }
 }

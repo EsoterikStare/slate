@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import './wall-clock';
-import type { WallClock, WallClockConfig } from './wall-clock';
+import './slate-clock';
+import type { SlateClock, SlateClockConfig } from './slate-clock';
 
-let el: WallClock | undefined;
+let el: SlateClock | undefined;
 
-async function mount(config: Partial<WallClockConfig> = {}) {
-  el = document.createElement('wall-clock');
-  el.setConfig({ type: 'custom:wall-clock', ...config });
+async function mount(config: Partial<SlateClockConfig> = {}) {
+  el = document.createElement('slate-clock');
+  el.setConfig({ type: 'custom:slate-clock', ...config });
   document.body.append(el);
   await el.updateComplete;
   return el;
@@ -22,7 +22,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('wall-clock', () => {
+describe('slate-clock', () => {
   it('shows the time with a meridiem and the long date', async () => {
     await mount();
     expect(text('.time')).toBe('10:41PM');
@@ -56,7 +56,7 @@ describe('wall-clock', () => {
   });
 
   it('rejects an invalid time_format', () => {
-    const c = document.createElement('wall-clock');
-    expect(() => c.setConfig({ type: 'custom:wall-clock', time_format: 13 as never })).toThrow(/time_format/);
+    const c = document.createElement('slate-clock');
+    expect(() => c.setConfig({ type: 'custom:slate-clock', time_format: 13 as never })).toThrow(/time_format/);
   });
 });

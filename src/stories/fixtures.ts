@@ -2,7 +2,7 @@
 // events placed relative to the current week, so stories always look live.
 
 import { addDays, buildWeeks, startOfDay } from '../calendar/dates';
-import type { WallCalendarConfig } from '../calendar/config';
+import type { SlateCalendarConfig } from '../calendar/config';
 import type { HaCalendarEvent } from '../ha/types';
 import type { ForecastEntry } from '../weather/forecast';
 
@@ -52,8 +52,8 @@ export const calendars: Record<string, HaCalendarEvent[]> = {
   'calendar.garden': [timed('Plant garlic', 13, 9, 0, 11)],
 };
 
-export const calendarConfig: WallCalendarConfig = {
-  type: 'custom:wall-calendar',
+export const calendarConfig: SlateCalendarConfig = {
+  type: 'custom:slate-calendar',
   calendars: [
     { entity: 'calendar.alex', name: 'Alex', color: 'dodgerblue' },
     { entity: 'calendar.sam', name: 'Sam', color: 'tomato' },

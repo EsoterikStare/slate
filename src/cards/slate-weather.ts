@@ -1,4 +1,4 @@
-// <wall-weather>: current conditions and/or a daily forecast strip from any
+// <slate-weather>: current conditions and/or a daily forecast strip from any
 // HA weather entity. Current values come from the entity's state; the daily
 // forecast from a live `weather/subscribe_forecast` subscription.
 
@@ -22,10 +22,10 @@ export const WEATHER_TEXT_ROLES = [
   'forecast_temp',
 ] as const;
 
-export interface WallWeatherConfig {
+export interface SlateWeatherConfig {
   type: string;
   entity: string;
-  /** Which part(s) to show; wall-layout typically places them separately. */
+  /** Which part(s) to show; slate-layout typically places them separately. */
   show?: 'both' | 'current' | 'forecast';
   forecast_days?: number;
   /** Display unit; defaults to the entity's own unit. */
@@ -48,7 +48,7 @@ interface ForecastMessage {
 
 const asUnit = (u: unknown): TempUnit => (u === '°C' || u === 'C' ? '°C' : '°F');
 
-export class WallWeather extends LitElement {
+export class SlateWeather extends LitElement {
   static override properties = {
     hass: { attribute: false },
     dimmed: { attribute: false },
@@ -59,9 +59,9 @@ export class WallWeather extends LitElement {
   };
 
   declare hass?: HomeAssistant;
-  /** Set by wall-layout during night dimming: icons hold still. */
+  /** Set by slate-layout during night dimming: icons hold still. */
   declare dimmed: boolean;
-  declare _config?: WallWeatherConfig;
+  declare _config?: SlateWeatherConfig;
   declare _forecast?: ForecastEntry[];
   declare _forecastError: boolean;
   declare _now: Date;
@@ -77,12 +77,12 @@ export class WallWeather extends LitElement {
     this.dimmed = false;
   }
 
-  setConfig(config: WallWeatherConfig): void {
-    if (!config?.entity?.startsWith('weather.')) throw new Error('wall-weather: `entity` must be a weather entity');
+  setConfig(config: SlateWeatherConfig): void {
+    if (!config?.entity?.startsWith('weather.')) throw new Error('slate-weather: `entity` must be a weather entity');
     const days = config.forecast_days ?? 5;
-    if (!Number.isInteger(days) || days < 0) throw new Error('wall-weather: `forecast_days` must be a whole number');
+    if (!Number.isInteger(days) || days < 0) throw new Error('slate-weather: `forecast_days` must be a whole number');
     for (const d of config.current ?? []) {
-      if (!WEATHER_DETAILS.includes(d)) throw new Error(`wall-weather: unknown current detail "${d}"`);
+      if (!WEATHER_DETAILS.includes(d)) throw new Error(`slate-weather: unknown current detail "${d}"`);
     }
     this._vars = textScaleVars(config.scale ?? 1, config.text ?? {});
     this._config = config;
@@ -92,9 +92,9 @@ export class WallWeather extends LitElement {
     return 3;
   }
 
-  static getStubConfig(hass: HomeAssistant): WallWeatherConfig {
+  static getStubConfig(hass: HomeAssistant): SlateWeatherConfig {
     const entity = Object.keys(hass.states).find((id) => id.startsWith('weather.')) ?? 'weather.home';
-    return { type: 'custom:wall-weather', entity };
+    return { type: 'custom:slate-weather', entity };
   }
 
   override connectedCallback(): void {
@@ -128,7 +128,7 @@ export class WallWeather extends LitElement {
       { type: 'weather/subscribe_forecast', forecast_type: 'daily', entity_id: entity },
     );
     this._unsub.catch((err: unknown) => {
-      console.warn('wall-weather: forecast subscription failed', err);
+      console.warn('slate-weather: forecast subscription failed', err);
       this._forecastError = true;
     });
   }
@@ -170,7 +170,7 @@ export class WallWeather extends LitElement {
     const night = sun?.state === 'below_horizon';
     const details = (this._config!.current ?? []).map((d) => this._detail(d, attrs, today, from, to)).filter(Boolean);
     return html`<div class="current">
-      <wall-weather-icon class="current-icon" .condition=${condition} .night=${night} .animated=${animated}></wall-weather-icon>
+      <slate-weather-icon class="current-icon" .condition=${condition} .night=${night} .animated=${animated}></slate-weather-icon>
       <div class="current-text">
         <div class="temperature">${displayTemp(attrs.temperature as number | undefined, from, to)}</div>
         <div class="condition">${conditionLabel(condition)}</div>
@@ -218,7 +218,7 @@ export class WallWeather extends LitElement {
       ${days.map(
         (f) => html`<div class="day">
           <div class="day-name">${new Date(f.datetime).toLocaleDateString(locale, { weekday: 'short' })}</div>
-          <wall-weather-icon class="day-icon" .condition=${f.condition ?? ''} .animated=${animated}></wall-weather-icon>
+          <slate-weather-icon class="day-icon" .condition=${f.condition ?? ''} .animated=${animated}></slate-weather-icon>
           <div class="day-temps">
             <span class="hi">${displayTemp(f.temperature, from, to)}</span>
             <span class="lo">${displayTemp(f.templow, from, to)}</span>
@@ -234,8 +234,8 @@ export class WallWeather extends LitElement {
   static override styles = css`
     :host {
       display: block;
-      color: var(--wall-text-color, #fff);
-      font-family: var(--wall-font-family, var(--primary-font-family, Roboto, system-ui, sans-serif));
+      color: var(--slate-text-color, #fff);
+      font-family: var(--slate-font-family, var(--primary-font-family, Roboto, system-ui, sans-serif));
     }
     .weather {
       /* Not a size container: inline-size containment would zero this card's
@@ -245,7 +245,7 @@ export class WallWeather extends LitElement {
     .current {
       display: flex;
       align-items: center;
-      justify-content: var(--wall-weather-align, flex-end);
+      justify-content: var(--slate-weather-align, flex-end);
       gap: 0.15em;
       ${roleFontSize('temperature', 8)}
     }
@@ -312,18 +312,18 @@ export class WallWeather extends LitElement {
   `;
 }
 
-if (!customElements.get('wall-weather')) {
-  customElements.define('wall-weather', WallWeather);
+if (!customElements.get('slate-weather')) {
+  customElements.define('slate-weather', SlateWeather);
   const w = window as unknown as { customCards?: unknown[] };
   (w.customCards ??= []).push({
-    type: 'wall-weather',
-    name: 'Wall Weather',
+    type: 'slate-weather',
+    name: 'Slate Weather',
     description: 'Current conditions and a daily forecast strip with animated icons.',
   });
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    'wall-weather': WallWeather;
+    'slate-weather': SlateWeather;
   }
 }

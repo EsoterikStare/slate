@@ -29,9 +29,9 @@ describe('backgroundUrl', () => {
   it('busts the cache on a single URL only when it rotates', () => {
     expect(backgroundUrl({ url: 'https://picsum.photos/1080/1920' }, undefined, 5)).toBe('https://picsum.photos/1080/1920');
     expect(backgroundUrl({ url: 'https://picsum.photos/1080/1920', interval: 10 }, undefined, 5)).toBe(
-      'https://picsum.photos/1080/1920?wall_t=5',
+      'https://picsum.photos/1080/1920?slate_t=5',
     );
-    expect(backgroundUrl({ url: 'https://x/img?grayscale', interval: 10 }, undefined, 2)).toBe('https://x/img?grayscale&wall_t=2');
+    expect(backgroundUrl({ url: 'https://x/img?grayscale', interval: 10 }, undefined, 2)).toBe('https://x/img?grayscale&slate_t=2');
   });
 });
 

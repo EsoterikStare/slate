@@ -1,14 +1,14 @@
-// Clock + weather arranged the way wall-layout will place them: clock and
+// Clock + weather arranged the way slate-layout will place them: clock and
 // current conditions side by side, the forecast strip full-width beneath.
-// --wall-unit is set by hand here (1% of 1080px), as wall-layout will.
+// --slate-unit is set by hand here (1% of 1080px), as slate-layout will.
 
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 import { createFakeHass } from '../ha/fake-hass';
 import { forecast, weatherEntity } from '../stories/fixtures';
 import { HA_CONDITIONS } from '../weather/conditions';
-import './wall-clock';
-import './wall-weather';
+import './slate-clock';
+import './slate-weather';
 
 const makeHass = (condition: string, night: boolean) =>
   createFakeHass({
@@ -42,11 +42,11 @@ const meta: Meta<Args> = {
   args: { condition: 'partlycloudy', night: false, forecast_days: 5, unit: 'F', time_format: 12, animations: true, scale: 1 },
   render: (args) => {
     const hass = makeHass(args.condition, args.night);
-    const clock = document.createElement('wall-clock');
-    clock.setConfig({ type: 'custom:wall-clock', time_format: args.time_format });
-    const current = document.createElement('wall-weather');
+    const clock = document.createElement('slate-clock');
+    clock.setConfig({ type: 'custom:slate-clock', time_format: args.time_format });
+    const current = document.createElement('slate-weather');
     current.setConfig({
-      type: 'custom:wall-weather',
+      type: 'custom:slate-weather',
       entity: 'weather.forecast_home',
       show: 'current',
       unit: args.unit,
@@ -54,9 +54,9 @@ const meta: Meta<Args> = {
       animations: args.animations,
     });
     current.hass = hass;
-    const strip = document.createElement('wall-weather');
+    const strip = document.createElement('slate-weather');
     strip.setConfig({
-      type: 'custom:wall-weather',
+      type: 'custom:slate-weather',
       entity: 'weather.forecast_home',
       show: 'forecast',
       forecast_days: args.forecast_days,
@@ -66,7 +66,7 @@ const meta: Meta<Args> = {
     strip.hass = hass;
     return html`
       <div
-        style="width: 1080px; padding: 32px; box-sizing: border-box; --wall-unit: 10.8px; --wall-scale: ${args.scale};
+        style="width: 1080px; padding: 32px; box-sizing: border-box; --slate-unit: 10.8px; --slate-scale: ${args.scale};
                background: linear-gradient(160deg, #3b5a40 0%, #2a3b2c 60%, #4a4235 100%); min-height: 760px"
       >
         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 24px">

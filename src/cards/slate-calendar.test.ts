@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { WallCalendarConfig } from '../calendar/config';
+import type { SlateCalendarConfig } from '../calendar/config';
 import { createFakeHass, touchEntity } from '../ha/fake-hass';
 import type { HaCalendarEvent } from '../ha/types';
-import './wall-calendar';
-import type { WallCalendar } from './wall-calendar';
+import './slate-calendar';
+import type { SlateCalendar } from './slate-calendar';
 
 // "Now" is Wednesday 2026-10-21 12:00; with Sunday-first weeks the grid is
 // Oct 18 – Nov 7 and Wednesday is column 3 of row 0.
@@ -16,8 +16,8 @@ const ev = (summary: string, start: HaCalendarEvent['start'], end: HaCalendarEve
   end,
 });
 
-const config = (extra: Partial<WallCalendarConfig> = {}): WallCalendarConfig => ({
-  type: 'custom:wall-calendar',
+const config = (extra: Partial<SlateCalendarConfig> = {}): SlateCalendarConfig => ({
+  type: 'custom:slate-calendar',
   calendars: [
     { entity: 'calendar.alex', name: 'Alex', color: 'dodgerblue' },
     { entity: 'calendar.family', name: 'Family', color: 'gold' },
@@ -25,15 +25,15 @@ const config = (extra: Partial<WallCalendarConfig> = {}): WallCalendarConfig => 
   ...extra,
 });
 
-let mounted: WallCalendar[] = [];
+let mounted: SlateCalendar[] = [];
 
 async function mount(
   calendars: Record<string, HaCalendarEvent[]>,
-  extra: Partial<WallCalendarConfig> = {},
-  setup?: (el: WallCalendar) => void,
+  extra: Partial<SlateCalendarConfig> = {},
+  setup?: (el: SlateCalendar) => void,
 ) {
   const hass = createFakeHass({ calendars: { 'calendar.alex': [], 'calendar.family': [], ...calendars } });
-  const el = document.createElement('wall-calendar');
+  const el = document.createElement('slate-calendar');
   el.setConfig(config(extra));
   setup?.(el);
   el.hass = hass;
@@ -43,10 +43,10 @@ async function mount(
   return { el, hass };
 }
 
-const $$ = (el: WallCalendar, sel: string) => [...el.shadowRoot!.querySelectorAll<HTMLElement>(sel)];
+const $$ = (el: SlateCalendar, sel: string) => [...el.shadowRoot!.querySelectorAll<HTMLElement>(sel)];
 const text = (n: Element | undefined) => n?.textContent?.replace(/\s+/g, ' ').trim() ?? '';
 /** The `.day` cell (timed events) for a given row and column. */
-const dayCell = (el: WallCalendar, row: number, col: number) =>
+const dayCell = (el: SlateCalendar, row: number, col: number) =>
   $$(el, '.rows > .row')[row]!.querySelectorAll('.day')[col] as HTMLElement;
 
 beforeEach(() => {
@@ -60,7 +60,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('wall-calendar', () => {
+describe('slate-calendar', () => {
   it('renders the legend and timed events in their day, with compact times', async () => {
     const { el } = await mount({ 'calendar.alex': [ev('Dentist', at(22, 15, 30), at(22, 16, 30))] });
     expect($$(el, '.legend .entry').map(text)).toEqual(['Alex', 'Family']);
@@ -188,7 +188,7 @@ describe('wall-calendar', () => {
     const metrics = { firstHeader: 30, header: 20, bar: 10, event: 20, more: 10, rowGap: 0, chrome: 40 };
     const heights: number[] = [];
     const listener = (e: Event) => heights.push((e as CustomEvent<number>).detail);
-    document.addEventListener('wall-natural-height', listener);
+    document.addEventListener('slate-natural-height', listener);
     const { el } = await mount({ 'calendar.alex': busy(22) }, {}, (c) => {
       c.metrics = metrics;
       c.availableHeight = 100;
@@ -196,7 +196,7 @@ describe('wall-calendar', () => {
     // 40 chrome + (30 + 4×20) + 20 + 20, regardless of the 100px it was given.
     expect(el.naturalHeight).toBe(190);
     expect(heights.at(-1)).toBe(190);
-    document.removeEventListener('wall-natural-height', listener);
+    document.removeEventListener('slate-natural-height', listener);
   });
 
   it('refetches when a calendar entity changes, but not on unrelated updates', async () => {
@@ -215,7 +215,7 @@ describe('wall-calendar', () => {
   it('strikes a calendar through in the legend when it fails to load', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const hass = createFakeHass({ calendars: { 'calendar.alex': [] } }); // family missing → errors
-    const el = document.createElement('wall-calendar');
+    const el = document.createElement('slate-calendar');
     el.setConfig(config());
     el.hass = hass;
     document.body.append(el);

@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
-import type { WallCalendarConfig } from '../calendar/config';
+import type { SlateCalendarConfig } from '../calendar/config';
 import { createFakeHass } from '../ha/fake-hass';
 import { calendarConfig, calendars } from '../stories/fixtures';
-import './wall-calendar';
+import './slate-calendar';
 
 const hass = createFakeHass({ calendars });
 const baseConfig = calendarConfig;
@@ -16,12 +16,12 @@ interface Args {
   min_events_per_day: number;
   past_events: 'dim' | 'hide';
   relative_day_names: boolean;
-  /** Height the calendar may use, as wall-layout would set it. 0 = unlimited. */
+  /** Height the calendar may use, as slate-layout would set it. 0 = unlimited. */
   availableHeight: number;
 }
 
 const meta: Meta<Args> = {
-  title: 'Cards/wall-calendar',
+  title: 'Cards/slate-calendar',
   parameters: { layout: 'fullscreen' },
   argTypes: {
     weeks: { control: { type: 'range', min: 1, max: 6 } },
@@ -43,7 +43,7 @@ const meta: Meta<Args> = {
     availableHeight: 0,
   },
   render: (args) => {
-    const config: WallCalendarConfig = {
+    const config: SlateCalendarConfig = {
       ...baseConfig,
       weeks: args.weeks,
       first_day: args.first_day,
@@ -54,7 +54,7 @@ const meta: Meta<Args> = {
       relative_day_names: args.relative_day_names,
     };
     // A fresh element per render so setConfig() sees every arg change.
-    const el = document.createElement('wall-calendar');
+    const el = document.createElement('slate-calendar');
     el.setConfig(config);
     el.hass = hass;
     if (args.availableHeight > 0) el.availableHeight = args.availableHeight;

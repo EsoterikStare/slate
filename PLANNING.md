@@ -19,8 +19,12 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
 ## Decisions
 
 ### Architecture
-- **Naming:** the `wall-` prefix (`custom:wall-layout`, `wall-clock`,
-  `wall-weather`, `wall-calendar`, `wall-background`).
+- **Naming:** the project is **Slate** (decided 2026-10-22, replacing the
+  working name "wall cards"). A slate is both a stone slab and the board you
+  chalk the day's plans on, and the docked design is a tall dark panel with
+  the week written on it. The repo, bundle (`slate.js`) and card prefix match:
+  `custom:slate-layout`, `slate-clock`, `slate-weather`, `slate-calendar`,
+  `slate-background`.
 - **Custom HA cards, not a standalone app.** Data comes through the `hass` object
   using the logged-in session, so there are no tokens or backend of our own.
   Weather arrives as a live subscription (`weather/subscribe_forecast`).
@@ -64,9 +68,9 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
     `event_title`, `all_day`, `more`
 - Spacing and icon sizes follow their related text role, so a larger
   `event_title` also makes the event row taller.
-- **Shared unit:** sizes are in `--wall-unit`, which wall-layout sets to 1% of
+- **Shared unit:** sizes are in `--slate-unit`, which slate-layout sets to 1% of
   the dashboard width, so a half-width card's text matches a full-width card's.
-  A card used outside wall-layout falls back to 1% of its container or the
+  A card used outside slate-layout falls back to 1% of its container or the
   viewport.
 
 ### Screen layout
@@ -82,7 +86,7 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
   rows up with it.
 - **Above the block:** the background photo. A quiet week leaves a big window
   onto the photo, a busy week a small one.
-- **`bottom_style`** (wall-layout, added 2026-10-19):
+- **`bottom_style`** (slate-layout, added 2026-10-19):
   - `docked` (default): the calendar runs edge to edge and down to the bottom
     edge on solid black, with no rounded corners or blur. The photo fills only
     the area above it, behind the clock and weather. Outer padding and column
@@ -176,7 +180,7 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
   because every Meteocons file reuses the same short gradient ids.
   `animations: false` pauses them (SMIL `pauseAnimations()`).
 - **One card, two placements:** `show: current | forecast | both`, so
-  wall-layout can put current conditions beside the clock and the forecast
+  slate-layout can put current conditions beside the clock and the forecast
   strip full-width underneath.
 - Night icons for current conditions follow `sun.sun` (configurable via
   `sun_entity`). Forecast days always use day icons.
@@ -195,14 +199,14 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
 - Implemented as a black overlay at `1 − brightness` opacity (cheaper on the
   Pi's GPU than a CSS `filter` over the whole screen), fading over 3s.
 
-### wall-layout (as built)
+### slate-layout (as built)
 - `top:` is a list of rows; a row is either a list of cards (side by side,
   spread to the edges) or `{ cards, collapsible: true }`. `bottom:` is one
   card. `background:`, `night:`, `scale:`, `padding:`, `gap:` and
   `reload_after:` sit alongside them.
 - Child cards are created with HA's own `loadCardHelpers()` inside HA, so any
   card type works in a row, not only ours.
-- The calendar announces its uncollapsed height (`wall-natural-height`
+- The calendar announces its uncollapsed height (`slate-natural-height`
   event). The layout runs `planScreen()` and hands the calendar its
   `availableHeight`.
 
@@ -212,7 +216,7 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
   the Pi). Earlier attempts reportedly stopped working after a while. If that
   happens again, suspect a changed IP, a reverse proxy hiding the Pi's IP, or the
   frontend stuck on "connection lost" after an HA restart.
-- **Watchdog:** wall-layout reloads the page once HA's `hass.connected` has
+- **Watchdog:** slate-layout reloads the page once HA's `hass.connected` has
   been false for `reload_after` seconds (default 300, `false` disables),
   counted from the first disconnect.
 - HA's header and sidebar are hidden by the Kiosk Mode HACS add-on, which is
@@ -221,20 +225,20 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
 ## Config sketch (illustrative, not final)
 
 ```yaml
-type: custom:wall-layout
+type: custom:slate-layout
 scale: 1                               # global text multiplier
 night: { start: "22:00", end: "06:00", brightness: 0.25 }
 background:
   entity: sensor.unsplash_background   # or: urls: [...], interval: 15m
 cards:
-  - type: custom:wall-clock
+  - type: custom:slate-clock
     time_format: 12
     text: { time: 1.4 }                # per-role multiplier
-  - type: custom:wall-weather
+  - type: custom:slate-weather
     entity: weather.forecast_home
     forecast_days: 5
     current: [feels_like, humidity, wind]
-  - type: custom:wall-calendar
+  - type: custom:slate-calendar
     weeks: 3
     first_day: sunday
     min_events_per_day: 2
@@ -254,8 +258,8 @@ cards:
 ## Releases (decided 2026-10-22)
 
 - Distributed through **HACS as a custom repository** (type Dashboard),
-  from the public GitHub repo `EsoterikStare/wall-cards` (renamed from
-  `Home-Assistant-Dashboard` so the file `wall-cards.js` matches the repo
+  from the public GitHub repo `EsoterikStare/slate` (renamed from
+  `Home-Assistant-Dashboard` so the file `slate.js` matches the repo
   name, as HACS's dashboard-card rules expect). MIT licence.
 - **Alpha phase:** versions `0.1.0-alpha.N`, published as GitHub
   *pre-releases*. HACS decides "beta" purely from GitHub's pre-release flag
@@ -264,7 +268,7 @@ cards:
 - **To release:** bump `version` in `package.json`, merge to `main`, then
   publish a GitHub release tagged `v<version>` on `main` (tick *pre-release*
   while in alpha). `.github/workflows/release.yml` builds and attaches
-  `wall-cards.js`, which HACS downloads (`dist/` is git-ignored, so HACS uses
+  `slate.js`, which HACS downloads (`dist/` is git-ignored, so HACS uses
   the release asset). The bundle prints its version to the console on load.
 - `.github/workflows/validate.yml` runs HACS's validation (`hacs/action`,
   category `plugin`). The `images` check is ignored until the README has
