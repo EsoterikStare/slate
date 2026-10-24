@@ -5,10 +5,10 @@ name: HACS validation
 # store; for now it flags problems early. `images` is ignored until the README
 # has screenshots (needed for the default store, not for custom repositories).
 #
-# Advisory during the alpha: the validator looks for slate.js on the latest
-# release that is *not* a pre-release, and every alpha is a pre-release, so it
-# reports "Repository structure ... is not compliant" until the first full
-# release. Remove `continue-on-error` once that release exists.
+# Advisory for now: the validator looks for slate.js on the latest release
+# that is *not* a pre-release, and checks the repo's description and topics.
+# Remove `continue-on-error` once a run passes with a regular release and the
+# topics in place.
 on:
   push:
   pull_request:

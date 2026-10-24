@@ -289,20 +289,27 @@ cards:
   from the public GitHub repo `EsoterikStare/slate` (renamed from
   `Home-Assistant-Dashboard` so the file `slate.js` matches the repo
   name, as HACS's dashboard-card rules expect). MIT licence.
-- **Alpha phase:** versions `0.1.0-alpha.N`, published as GitHub
-  *pre-releases*. HACS decides "beta" purely from GitHub's pre-release flag
-  (`release.prerelease` in HACS's `repositories/base.py`), not the tag name,
-  so users must tick *Show beta versions* to get them.
+- **Alpha phase:** versions `0.1.0-alpha.N`, published as **regular**
+  GitHub releases (changed 2026-10-24). The first plan was pre-releases, but
+  HACS validates a custom repository when it's added, looking only at regular
+  releases. With only a pre-release it fell back to `main`, found no
+  `slate.js`, and refused to add the repo ("Repository structure for main is
+  not compliant"). "Show beta versions" can't help, because it only exists
+  once the repo has been added. HACS decides "beta" purely from GitHub's
+  pre-release flag (`release.prerelease`), not the tag name, so an `-alpha`
+  tag on a regular release is fine. Once a regular release exists,
+  pre-releases can be used for opt-in testing builds on top of it. Exposure
+  stays limited while Slate isn't in the catalog.
 - **To release:** bump `version` in `package.json`, merge to `main`, then
-  publish a GitHub release tagged `v<version>` on `main` (tick *pre-release*
-  while in alpha). `.github/workflows/release.yml` builds and attaches
+  publish a GitHub release tagged `v<version>` on `main` (a regular release;
+  use *pre-release* only for opt-in test builds). `.github/workflows/release.yml` builds and attaches
   `slate.js`, which HACS downloads (`dist/` is git-ignored, so HACS uses
   the release asset). The bundle prints its version to the console on load.
 - `.github/workflows/validate.yml` runs HACS's validation (`hacs/action`,
   category `plugin`). The `images` check is ignored until the README has
-  screenshots. It's advisory (`continue-on-error`) during the alpha: the
-  validator only looks at releases that aren't pre-releases, so it can't find
-  `slate.js` until the first full release. Remove `continue-on-error` then.
+  screenshots. It's advisory (`continue-on-error`) until a run passes with
+  a regular release and the repo's topics in place. Then remove
+  `continue-on-error`.
 - **Later, the HACS default store:** README screenshots, a full release (not a
   pre-release), validation passing with nothing ignored, then a PR adding the
   repo to the `plugin` list in `hacs/default`. Reviews can take months.

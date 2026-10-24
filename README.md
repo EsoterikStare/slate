@@ -17,8 +17,8 @@ Design decisions and their reasons are in [PLANNING.md](PLANNING.md).
 
 ## Install
 
-> **Status: alpha.** Releases are published as GitHub *pre-releases*
-> (`v0.1.0-alpha.N`), so they're only offered to people who opt in.
+> **Status: alpha.** Versions are numbered `0.1.0-alpha.N`. Expect rough
+> edges and breaking config changes between releases.
 
 Slate isn't in the catalog yet, so it's added by its GitHub address. This
 link opens the right screen in your Home Assistant (the Marketplace on
@@ -28,14 +28,11 @@ link opens the right screen in your Home Assistant (the Marketplace on
 
 **Home Assistant 2026.11 and later (Marketplace):** Settings → Marketplace,
 add `https://github.com/EsoterikStare/slate` as a *Dashboard* repository,
-open **Slate**, and turn on its **Pre-release** switch (needed while only
-pre-releases exist), then install.
+open **Slate**, and install.
 
 **Earlier versions (HACS):** HACS → ⋮ → *Custom repositories* → add
 `https://github.com/EsoterikStare/slate` as type *Dashboard*. Open
-**Slate**, choose *Download*, and tick **Show beta versions** in the
-download dialog. HACS calls every pre-release a "beta", and while only
-pre-releases exist, nothing is installable without it.
+**Slate** and choose *Download*.
 
 Either way, the dashboard resource is added for you, at
 `/local/community/slate/slate.js` (or HACS's `/hacsfiles/slate/slate.js`), and
