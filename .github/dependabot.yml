@@ -1,0 +1,9 @@
+# Keeps the workflows' actions current (checkout, setup-node, pnpm), so they
+# don't drift onto deprecated runtimes. hacs/action stays on @main: its last
+# tagged release is from 2022, and the catalog's checks track main.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

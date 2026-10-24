@@ -255,7 +255,35 @@ cards:
 - How time-zone and DST edge cases look in multi-day bars. Settle during
   implementation, with tests.
 
-## Releases (decided 2026-10-22)
+## Releases (decided 2026-10-22, updated 2026-10-24)
+
+- **HACS is becoming the Marketplace**, built into Home Assistant from
+  2026.11 (Settings → Marketplace), per
+  https://contributors.home-assistant.io/marketplace/. It reads the same
+  catalog (`hacs/default`) and the same `hacs.json`, so nothing here changes.
+  Relevant details for this repo:
+  - It installs to `www/community/slate/` and registers
+    `/local/community/slate/slate.js?v=<id>-<version>` as a module resource.
+    Users reload the browser after an update.
+  - File search order is latest release assets, then repo root, then `dist/`.
+    Building in a release workflow and attaching the file is the preferred
+    approach (what we do). Lit must be bundled, since the frontend doesn't
+    share its copy (it is).
+  - The install folder is the repo name, and it refuses a second repo with
+    the same name from another owner. On 2026-10-24 no catalog plugin or
+    integration was named `slate`; some themes contain "slate" in their names
+    but install elsewhere.
+  - Pre-releases are opt-in per repository through a **Pre-release** switch
+    (HACS: "Show beta versions"), and only if newer than the latest regular
+    release.
+  - Catalog submission is still a PR to `hacs/default` (plugin list,
+    alphabetical), with a link to the latest full release and a passing HACS
+    action run with nothing ignored. README images are required for
+    dashboard repos.
+- The README links to the `hacs_repository` My link, which opens HACS on
+  older versions and the Marketplace on 2026.11+.
+- Dependabot keeps the workflows' actions current. `hacs/action` stays on
+  `@main`, because its last tagged release is from 2022.
 
 - Distributed through **HACS as a custom repository** (type Dashboard),
   from the public GitHub repo `EsoterikStare/slate` (renamed from

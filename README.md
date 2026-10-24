@@ -20,12 +20,27 @@ Design decisions and their reasons are in [PLANNING.md](PLANNING.md).
 > **Status: alpha.** Releases are published as GitHub *pre-releases*
 > (`v0.1.0-alpha.N`), so they're only offered to people who opt in.
 
-**Through HACS:** HACS → ⋮ → *Custom repositories* → add
+Slate isn't in the catalog yet, so it's added by its GitHub address. This
+link opens the right screen in your Home Assistant (the Marketplace on
+2026.11 and later, HACS before that):
+
+[![Open in Home Assistant](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=EsoterikStare&repository=slate&category=plugin)
+
+**Home Assistant 2026.11 and later (Marketplace):** Settings → Marketplace,
+add `https://github.com/EsoterikStare/slate` as a *Dashboard* repository,
+open **Slate**, and turn on its **Pre-release** switch (needed while only
+pre-releases exist), then install.
+
+**Earlier versions (HACS):** HACS → ⋮ → *Custom repositories* → add
 `https://github.com/EsoterikStare/slate` as type *Dashboard*. Open
 **Slate**, choose *Download*, and tick **Show beta versions** in the
 download dialog. HACS calls every pre-release a "beta", and while only
-pre-releases exist, nothing is installable without it. HACS adds the
-dashboard resource for you, and offers new releases as updates.
+pre-releases exist, nothing is installable without it.
+
+Either way, the dashboard resource is added for you, at
+`/local/community/slate/slate.js` (or HACS's `/hacsfiles/slate/slate.js`), and
+new releases are offered as updates. After updating, reload the browser
+showing the dashboard (on the kiosk, reload the page) to load the new version.
 
 The browser console prints the running version (`SLATE 0.1.0-alpha.1`) on
 load, which is handy for checking what the kiosk is actually running.
