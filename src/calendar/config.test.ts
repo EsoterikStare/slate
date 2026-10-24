@@ -20,8 +20,8 @@ describe('resolveConfig', () => {
   });
 
   it('accepts bare entity strings and derives a name and color', () => {
-    const c = resolveConfig({ ...base, calendars: ['calendar.kids', 'calendar.school'] });
-    expect(c.calendars[0]).toEqual({ entity: 'calendar.kids', name: 'Kids', color: 'dodgerblue' });
+    const c = resolveConfig({ ...base, calendars: ['calendar.kids_activities', 'calendar.school'] });
+    expect(c.calendars[0]).toEqual({ entity: 'calendar.kids_activities', name: 'Kids Activities', color: 'dodgerblue' });
     expect(c.calendars[1]!.color).not.toBe(c.calendars[0]!.color);
   });
 

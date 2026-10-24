@@ -52,8 +52,8 @@ load, which is handy for checking what the kiosk is actually running.
 
 ## Dashboard
 
-A dashboard with one panel view holding `slate-layout`. This is the existing
-setup (7 iCloud calendars, Unsplash background, Met.no weather) translated:
+A dashboard with one panel view holding `slate-layout`. An example with
+several calendars, an Unsplash background sensor and Met.no weather:
 
 ```yaml
 kiosk_mode:
