@@ -272,7 +272,9 @@ cards:
   the release asset). The bundle prints its version to the console on load.
 - `.github/workflows/validate.yml` runs HACS's validation (`hacs/action`,
   category `plugin`). The `images` check is ignored until the README has
-  screenshots.
+  screenshots. It's advisory (`continue-on-error`) during the alpha: the
+  validator only looks at releases that aren't pre-releases, so it can't find
+  `slate.js` until the first full release. Remove `continue-on-error` then.
 - **Later, the HACS default store:** README screenshots, a full release (not a
   pre-release), validation passing with nothing ignored, then a PR adding the
   repo to the `plugin` list in `hacs/default`. Reviews can take months.
