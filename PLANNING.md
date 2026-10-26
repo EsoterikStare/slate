@@ -189,6 +189,10 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
     each other (a cloud's shadow on the sun behind it, fog lines stacking
     into a grey band). The glow costs nothing per frame. Outline strokes are
     thin and close to each fill colour, so shapes stay soft.
+  - Clouds (85%) and rain, fog and wind lines (90%) are slightly
+    see-through, as Meteocons' were, so the sun or moon shows faintly through
+    a cloud. The opacity is set on the shapes, so it's drawn into each layer
+    once and costs nothing per frame.
   - One weight across the set: same cloud, 3.4–3.6 unit strokes for rain, fog
     and wind, larger outlined snowflakes and hail, precipitation resting fully
     below the cloud.

@@ -57,10 +57,17 @@ export const DEFS = `
 const CLOUD_D =
   'M46.5 31.5h-.32a10.49 10.49 0 00-19.11-8 7 7 0 00-10.57 6 7.21 7.21 0 00.1 1.14A7.5 7.5 0 0018 45.5a4.19 4.19 0 00.5 0v0h28a7 7 0 000-14z';
 
-const cloud = `<path fill="url(#slate-cloud)" stroke="#d3deee" stroke-width="0.5" d="${CLOUD_D}"/>`;
-const stormCloud = `<path fill="url(#slate-cloud-dark)" stroke="#7d8696" stroke-width="0.5" d="${CLOUD_D}"/>`;
+/**
+ * Clouds, rain, fog and wind are slightly see-through, as Meteocons' were.
+ * Set on the shapes, so it's drawn into each layer once: no per-frame cost.
+ */
+const CLOUD_OPACITY = 0.85;
+const LINE_OPACITY = 0.9;
+
+const cloud = `<path opacity="${CLOUD_OPACITY}" fill="url(#slate-cloud)" stroke="#d3deee" stroke-width="0.5" d="${CLOUD_D}"/>`;
+const stormCloud = `<path opacity="${CLOUD_OPACITY}" fill="url(#slate-cloud-dark)" stroke="#7d8696" stroke-width="0.5" d="${CLOUD_D}"/>`;
 /** A smaller, darker cloud up and to the right, behind the main one. */
-const backCloud = `<path fill="url(#slate-cloud-back)" stroke="#c0cbda" stroke-width="0.6" transform="translate(13 -9) scale(0.78)" d="${CLOUD_D}"/>`;
+const backCloud = `<path opacity="${CLOUD_OPACITY}" fill="url(#slate-cloud-back)" stroke="#c0cbda" stroke-width="0.6" transform="translate(13 -9) scale(0.78)" d="${CLOUD_D}"/>`;
 
 const sunCore = `<circle cx="32" cy="32" r="10.5" fill="url(#slate-sun)" stroke="#f6ad1d" stroke-width="0.5"/>`;
 const sunRays = `<path fill="none" stroke="#fbbf24" stroke-linecap="round" stroke-width="3.4" d="M32 15.71V9.5m0 45v-6.21m11.52-27.81l4.39-4.39M16.09 47.91l4.39-4.39m0-23l-4.39-4.39m31.82 31.78l-4.39-4.39M15.71 32H9.5m45 0h-6.21"/>`;
@@ -74,7 +81,7 @@ const star = (x: number, y: number, r: number) =>
 
 /** A rain line hanging under the cloud at x: bold and slanted (Meteocons' were 2×5 units). */
 const rainStreak = (x: number, length = 9) =>
-  `<path fill="none" stroke="#2f86f6" stroke-linecap="round" stroke-width="3.4" d="M${x + 1.4} 47l-${(length * 0.2).toFixed(2)} ${length}"/>`;
+  `<path opacity="${LINE_OPACITY}" fill="none" stroke="#2f86f6" stroke-linecap="round" stroke-width="3.4" d="M${x + 1.4} 47l-${(length * 0.2).toFixed(2)} ${length}"/>`;
 
 /** Six-armed snowflake at (x, y): a blue outline stroke under a white one, readable on white. */
 const snowflake = (x: number, y: number) => {
@@ -93,9 +100,9 @@ const hailstone = (x: number, y: number) =>
 const bolt = `<path fill="url(#slate-bolt)" stroke="#d98a0b" stroke-linejoin="round" stroke-width="0.5" d="M30 36l-4 12h4l-2 10 10-14h-6l4-8h-6z"/>`;
 
 const fogLine = (y: number, x1: number, x2: number) =>
-  `<path fill="none" stroke="#d3d8df" stroke-linecap="round" stroke-width="3.6" d="M${x1} ${y}H${x2}"/>`;
-const windUpper = `<path fill="none" stroke="#e6eaf0" stroke-linecap="round" stroke-width="3.6" d="M43.64 20a5 5 0 113.61 8.46h-35.5"/>`;
-const windLower = `<path fill="none" stroke="#d6dce5" stroke-linecap="round" stroke-width="3.6" d="M29.14 44a5 5 0 103.61-8.46h-21"/>`;
+  `<path opacity="${LINE_OPACITY}" fill="none" stroke="#d3d8df" stroke-linecap="round" stroke-width="3.6" d="M${x1} ${y}H${x2}"/>`;
+const windUpper = `<path opacity="${LINE_OPACITY}" fill="none" stroke="#e6eaf0" stroke-linecap="round" stroke-width="3.6" d="M43.64 20a5 5 0 113.61 8.46h-35.5"/>`;
+const windLower = `<path opacity="${LINE_OPACITY}" fill="none" stroke="#d6dce5" stroke-linecap="round" stroke-width="3.6" d="M29.14 44a5 5 0 103.61-8.46h-21"/>`;
 
 const question = `<text x="32" y="43" text-anchor="middle" font-family="Roboto, system-ui, sans-serif" font-weight="700" font-size="17" fill="#4f5867">?</text>`;
 
