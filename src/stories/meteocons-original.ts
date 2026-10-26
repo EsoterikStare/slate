@@ -1,8 +1,9 @@
-// Meteocons "fill" animated icons by Bas Milius (MIT), from the
-// @bybas/weather-icons package. Only the icons conditionIcon() can return are
-// imported, so the bundle carries ~18 small SVGs rather than all 122.
+// The Meteocons "fill" animated icons by Bas Milius (MIT, from the
+// @bybas/weather-icons package) that Slate used before its own layered icons.
+// Storybook only, for side-by-side comparison; never in the card bundle.
+// Keyed by the icon name the old card picked (old mapping: rainy → drizzle,
+// pouring → rain).
 
-import type { IconName } from './conditions';
 import clearDay from '@bybas/weather-icons/production/fill/all/clear-day.svg?raw';
 import clearNight from '@bybas/weather-icons/production/fill/all/clear-night.svg?raw';
 import cloudy from '@bybas/weather-icons/production/fill/all/cloudy.svg?raw';
@@ -22,7 +23,7 @@ import sleet from '@bybas/weather-icons/production/fill/all/sleet.svg?raw';
 import wind from '@bybas/weather-icons/production/fill/all/wind.svg?raw';
 import notAvailable from '@bybas/weather-icons/production/fill/all/not-available.svg?raw';
 
-export const ICONS: Record<IconName, string> = {
+export const ORIGINAL_ICONS: Record<string, string> = {
   'clear-day': clearDay,
   'clear-night': clearNight,
   'cloudy': cloudy,

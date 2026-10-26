@@ -11,7 +11,7 @@ card over a full-screen photo.)
 | `custom:slate-layout` | Full-screen composition: background, top rows stacked on a bottom card, night dimming, reload watchdog |
 | `custom:slate-calendar` | Week rows that grow upward with the busiest day; collapses far-future weeks to fit |
 | `custom:slate-clock` | Large time and date |
-| `custom:slate-weather` | Current conditions and/or a daily forecast strip, with animated Meteocons |
+| `custom:slate-weather` | Current conditions and/or a daily forecast strip, with animated icons |
 
 Design decisions and their reasons are in [PLANNING.md](PLANNING.md).
 
@@ -210,5 +210,6 @@ to `\\homeassistant.local\config\www\slate` through the Samba share
 add-on (override with `SLATE_DEPLOY_DIR`), then prints the resource URL with a
 `?v=` stamp so the Pi doesn't keep a cached copy.
 
-Weather icons: [Meteocons](https://github.com/basmilius/weather-icons) by Bas
-Milius, MIT licence.
+Weather icons: Slate's own, redrawn from
+[Meteocons](https://github.com/basmilius/weather-icons) by Bas Milius (MIT
+licence, see `src/weather/METEOCONS-LICENSE.txt`).

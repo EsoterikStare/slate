@@ -174,11 +174,28 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
   `weather/subscribe_forecast` subscription.
 - Configurable: forecast days, °F/°C (defaults to HA's unit), and which current
   conditions to show (e.g. feels-like, humidity, wind, precipitation).
-- **Icons:** Meteocons (Bas Milius, MIT, the `@bybas/weather-icons` package),
-  the same animated "fill" style clock-weather-card uses. Only the ~18 icons the
-  condition mapping can return are bundled. Each icon gets its own shadow root
-  because every Meteocons file reuses the same short gradient ids.
-  `animations: false` pauses them (SMIL `pauseAnimations()`).
+- **Icons (rebuilt 2026-10-26):** Slate's own layered icons
+  (`src/weather/icon-art.ts`), redrawn from Meteocons (Bas Milius, MIT; licence
+  in `src/weather/METEOCONS-LICENSE.txt`). The Meteocons originals were SMIL
+  animations: on the Pi they re-rasterise every frame, and with the full-size
+  Unsplash photo behind them the kiosk managed 0.7 fps (animations paused:
+  60 fps), so they ticked about once a second.
+  - Each icon is a stack of static SVG layers. Animation only moves or fades
+    whole layers with CSS `transform`/`opacity`, which the GPU composites
+    without redrawing them. The drop shadow is an SVG filter baked into each
+    layer once, not a CSS filter recomputed per frame.
+  - One weight across the set: same cloud, 3.4–3.6 unit strokes for rain, fog
+    and wind, larger outlined snowflakes and hail, precipitation resting fully
+    below the cloud.
+  - Rain is the classic cloud with slanted lines, never dots (the Meteocons
+    "drizzle" drops read as a sprinkle and vanished at a distance). HA's two
+    intensities: `rainy` → three lines; `pouring` → five longer, faster lines
+    under a darker cloud. Storm rain falls either side of the bolt.
+  - `animations: false` (and night dimming, and reduced-motion) drops the
+    animation entirely, so a still icon shows every layer in place rather
+    than a frozen frame with a raindrop mid-fade.
+  - The Storybook story "Weather/Icons" shows every icon beside the Meteocons
+    original it replaced.
 - **One card, two placements:** `show: current | forecast | both`, so
   slate-layout can put current conditions beside the clock and the forecast
   strip full-width underneath.
@@ -215,8 +232,8 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
     declared per element so it scales with each font size. On by default
     (`text_shadow`).
   - **Icon shadow:** a drop shadow on weather icons. On by default
-    (`icon_shadow`), though it adds a little GPU work per animation frame on
-    the Pi.
+    (`icon_shadow`); it's drawn into each icon layer once, so it costs nothing
+    per animation frame.
 - Compared over a bright sky, snow and busy foliage in the Storybook story
   "Dashboard/Legibility comparison". Shadows alone weren't enough on white
   areas. The gradient carries most of the load there, and the shadows help

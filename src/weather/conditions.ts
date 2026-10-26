@@ -35,7 +35,7 @@ export type IconName =
   | 'partly-cloudy-day'
   | 'partly-cloudy-night'
   | 'rain'
-  | 'drizzle'
+  | 'heavy-rain'
   | 'snow'
   | 'sleet'
   | 'wind'
@@ -61,10 +61,12 @@ export function conditionIcon(condition: string, night = false): IconName {
       return dn('thunderstorms-day', 'thunderstorms-night');
     case 'lightning-rainy':
       return dn('thunderstorms-day-rain', 'thunderstorms-night-rain');
+    // HA has two rain intensities. Both use rain lines (Meteocons' round
+    // "drizzle" drops read as a sprinkle and vanished at a distance).
     case 'rainy':
-      return 'drizzle';
-    case 'pouring':
       return 'rain';
+    case 'pouring':
+      return 'heavy-rain';
     case 'snowy':
       return 'snow';
     case 'snowy-rainy':
