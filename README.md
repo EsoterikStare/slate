@@ -70,6 +70,9 @@ views:
         reload_after: 300              # seconds offline before reloading the page
         gap: 24                        # px between the weather and the calendar
         bottom_style: docked           # or floating: translucent card over a full-screen photo
+        scrim: 0.2                     # soft gradient behind text on the photo (0 = off, up to 1)
+        text_shadow: true              # layered shadow on clock and weather text
+        icon_shadow: true              # drop shadow on weather icons
         top:
           - - type: custom:slate-clock
               time_format: 12

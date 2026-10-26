@@ -18,8 +18,8 @@ const PREVIOUS_SHADOW = '0 0.04em 0.25em rgba(0, 0, 0, 0.5)';
 const variants = [
   { label: 'Before', scrim: 0, previousShadows: true },
   { label: 'Shadows only', scrim: 0, previousShadows: false },
-  { label: 'Gradient only', scrim: 0.5, previousShadows: true },
-  { label: 'Gradient + shadows', scrim: 0.5, previousShadows: false },
+  { label: 'Gradient only', scrim: 1, previousShadows: true },
+  { label: 'Gradient + shadows (default)', scrim: 1, previousShadows: false },
 ];
 
 interface Args {
@@ -36,7 +36,7 @@ const meta: Meta<Args> = {
     strength: { control: { type: 'range', min: 0.1, max: 0.9, step: 0.05 } },
     width: { control: { type: 'range', min: 300, max: 700, step: 10 } },
   },
-  args: { photo: 'sky', strength: 0.5, width: 390 },
+  args: { photo: 'sky', strength: 0.2, width: 390 },
   render: ({ photo, strength, width }) => {
     const hass = createFakeHass({
       calendars,

@@ -163,11 +163,16 @@ describe('slate-layout', () => {
     const scrim = () => root().querySelector<HTMLElement>('.scrim')!.style.backgroundImage;
     const screenVar = (name: string) => root().querySelector<HTMLElement>('.screen')!.style.getPropertyValue(name);
 
-    it('darkens a band behind the pinned forecast and one behind the clock', async () => {
+    it('darkens a band behind the pinned forecast and one behind the clock, at 0.2 by default', async () => {
       await mount();
       // Top: padding 16 + forecast 200. Bottom (docked): gap 24 + clock row 300.
-      expect(scrim()).toContain('linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0px, rgba(0, 0, 0, 0.3) 216px');
-      expect(scrim()).toContain('linear-gradient(to top, rgba(0, 0, 0, 0.5) 0px, rgba(0, 0, 0, 0.3) 324px');
+      expect(scrim()).toContain('linear-gradient(to bottom, rgba(0, 0, 0, 0.2) 0px, rgba(0, 0, 0, 0.12) 216px');
+      expect(scrim()).toContain('linear-gradient(to top, rgba(0, 0, 0, 0.2) 0px, rgba(0, 0, 0, 0.12) 324px');
+    });
+
+    it('takes a configured scrim strength', async () => {
+      await mount(config({ scrim: 0.6 }));
+      expect(scrim()).toContain('rgba(0, 0, 0, 0.6) 0px');
     });
 
     it('drops the top band when the forecast folds away', async () => {

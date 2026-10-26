@@ -329,7 +329,7 @@ export class SlateLayout extends LitElement {
     this._scrim = scrimBackground({
       top: header ? pad + header : 0,
       bottom: stack ? belowStack + gap + stack : 0,
-      strength: this._config.scrim ?? 0.5,
+      strength: this._config.scrim ?? 0.2,
     });
   };
 

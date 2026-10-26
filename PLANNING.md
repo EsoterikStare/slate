@@ -193,6 +193,25 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
 - Default panels: `rgba(0,0,0,0.45)` with `blur(4px)` and a 16px radius, all
   configurable.
 
+### Legibility over the photo (decided 2026-10-25)
+- No card or blur behind the clock and weather. Instead:
+  - **Scrim:** a soft dark gradient on the photo, only in a band behind the
+    top-pinned rows and a band behind the rows stacked on the calendar
+    (`src/layout/scrim.ts`). Each band is full strength at the screen edge,
+    60% at the far edge of the text, and gone half a band later. Bands follow
+    the measured rows and disappear when their rows fold away.
+    `scrim: 0.2` by default (`0` turns it off).
+  - **Text shadow:** layered (a tight dark edge plus a wide soft halo),
+    declared per element so it scales with each font size. On by default
+    (`text_shadow`).
+  - **Icon shadow:** a drop shadow on weather icons. On by default
+    (`icon_shadow`), though it adds a little GPU work per animation frame on
+    the Pi.
+- Compared over a bright sky, snow and busy foliage in the Storybook story
+  "Dashboard/Legibility comparison". Shadows alone weren't enough on white
+  areas. The gradient carries most of the load there, and the shadows help
+  on busy photos.
+
 ### Night mode
 - Scheduled dimming between configured hours, with animations paused while dimmed.
 - No content shifting.
