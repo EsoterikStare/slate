@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findProblems, isPublishableEmail, parseDenylist } from './rules.mjs';
+import { findProblems, isPublishableEmail, mask, parseDenylist } from './rules.mjs';
 
 // Example values are neutral (not anyone's real addresses) and assembled at
 // runtime, so this file contains no literal private IP, personal email or
@@ -65,7 +65,14 @@ describe('parseDenylist', () => {
 
 describe('isPublishableEmail', () => {
   it('accepts only noreply-style addresses', () => {
-    expect(isPublishableEmail(at('8852434+someone', 'users.noreply.github.com'))).toBe(true);
+    expect(isPublishableEmail(at('12345678+someone', 'users.noreply.github.com'))).toBe(true);
     expect(isPublishableEmail(at('someone', 'mailprovider.test'))).toBe(false);
+  });
+});
+
+describe('mask', () => {
+  it('keeps only the first two characters', () => {
+    expect(mask(at('someone', 'mailprovider.test'))).toBe('so••••••••••••');
+    expect(mask('ab')).toBe('••');
   });
 });

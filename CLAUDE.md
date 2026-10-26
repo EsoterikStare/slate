@@ -27,7 +27,10 @@ never hard-code them.
   author, and every term in `.privacy-denylist`. That file is git-ignored and
   local only. Never commit it, never quote its contents into tracked files,
   and never bypass the hook (`--no-verify`).
-- CI runs the same check, minus the private denylist, on every push.
+- The check refuses any commit that includes `.privacy-denylist` itself
+  (even force-added), without printing its contents.
+- CI runs the same check, minus the private denylist, on every push, and
+  masks what it finds, because Actions logs on a public repo are public.
 - When adding a personal detail anywhere locally (config, chat), add it to
   `.privacy-denylist` too.
 

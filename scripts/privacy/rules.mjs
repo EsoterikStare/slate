@@ -52,6 +52,15 @@ export function findProblems(text, denylist = []) {
   return problems;
 }
 
+/**
+ * Hides most of a match for output that others can read (CI logs on a public
+ * repo), so reporting a leak doesn't repeat it: only the first two characters
+ * stay visible.
+ */
+export function mask(value) {
+  return value.length <= 2 ? '••' : value.slice(0, 2) + '•'.repeat(Math.min(value.length - 2, 12));
+}
+
 /** Whether a commit author/committer email is safe to publish. */
 export function isPublishableEmail(email) {
   return ALLOWED_EMAIL.some((a) => a.test(email.trim()));
