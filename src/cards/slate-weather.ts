@@ -9,7 +9,9 @@ import { roleFontSize, textScaleVars } from '../text-scale';
 import { conditionLabel } from '../weather/conditions';
 import type { ForecastEntry, TempUnit } from '../weather/forecast';
 import { displayTemp, splitForecast } from '../weather/forecast';
-import '../weather/weather-icon';
+import { haDescription } from '../icons/adapters/home-assistant';
+import { resolveIcon } from '../icons/describe';
+import '../icons/weather-icon';
 
 export const WEATHER_DETAILS = ['feels_like', 'humidity', 'wind', 'precipitation'] as const;
 export type WeatherDetail = (typeof WEATHER_DETAILS)[number];
@@ -170,7 +172,11 @@ export class SlateWeather extends LitElement {
     const night = sun?.state === 'below_horizon';
     const details = (this._config!.current ?? []).map((d) => this._detail(d, attrs, today, from, to)).filter(Boolean);
     return html`<div class="current">
-      <slate-weather-icon class="current-icon" .condition=${condition} .night=${night} .animated=${animated}></slate-weather-icon>
+      <slate-weather-icon
+        class="current-icon"
+        .icon=${resolveIcon(haDescription(condition, night))}
+        .animated=${animated}
+      ></slate-weather-icon>
       <div class="current-text">
         <div class="temperature">${displayTemp(attrs.temperature as number | undefined, from, to)}</div>
         <div class="condition">${conditionLabel(condition)}</div>
@@ -218,7 +224,11 @@ export class SlateWeather extends LitElement {
       ${days.map(
         (f) => html`<div class="day">
           <div class="day-name">${new Date(f.datetime).toLocaleDateString(locale, { weekday: 'short' })}</div>
-          <slate-weather-icon class="day-icon" .condition=${f.condition ?? ''} .animated=${animated}></slate-weather-icon>
+          <slate-weather-icon
+            class="day-icon"
+            .icon=${resolveIcon(haDescription(f.condition ?? ''))}
+            .animated=${animated}
+          ></slate-weather-icon>
           <div class="day-temps">
             <span class="hi">${displayTemp(f.temperature, from, to)}</span>
             <span class="lo">${displayTemp(f.templow, from, to)}</span>

@@ -6,7 +6,9 @@ import type { Meta, StoryObj } from '@storybook/web-components-vite';
 import { html } from 'lit';
 import { ORIGINAL_ICONS } from '../stories/meteocons-original';
 import { hardPhotos } from '../stories/fixtures';
-import { conditionLabel } from './conditions';
+import { conditionLabel } from '../weather/conditions';
+import { haDescription } from './adapters/home-assistant';
+import { resolveIcon } from './describe';
 import './weather-icon';
 
 // What the old mapping picked for each condition (rainy was the dot "drizzle").
@@ -58,8 +60,7 @@ const meta: Meta<Args> = {
         <div style="display: flex; gap: 6px">
           <slate-weather-icon
             style="font-size: ${size}px"
-            .condition=${t.condition}
-            .night=${t.night}
+            .icon=${resolveIcon(haDescription(t.condition, t.night))}
             .animated=${animated}
           ></slate-weather-icon>
           ${compare

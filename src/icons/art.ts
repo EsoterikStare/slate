@@ -1,4 +1,4 @@
-// Slate's weather icons: layered and built for a Raspberry Pi kiosk.
+// Weather icon artwork: layered, and built for a Raspberry Pi kiosk.
 //
 // Shapes are derived from Meteocons by Bas Milius (MIT, see
 // METEOCONS-LICENSE.txt), redrawn for viewing across a room: thicker rain,
@@ -12,7 +12,7 @@
 // SVG (SMIL) instead re-rasterises every frame, which ran at under 1 fps on
 // the Pi.
 
-import type { IconName } from './conditions';
+import type { IconName } from './names';
 
 export type Motion = 'drift' | 'spin' | 'rain' | 'pour' | 'snow' | 'hail' | 'flash' | 'fog' | 'wind' | 'rock' | 'twinkle';
 
@@ -30,25 +30,25 @@ export interface Layer {
 
 /** Gradients shared by every layer of an icon. */
 export const DEFS = `
-  <linearGradient id="slate-cloud" x1="0.2" y1="0" x2="0.65" y2="1">
+  <linearGradient id="wi-cloud" x1="0.2" y1="0" x2="0.65" y2="1">
     <stop offset="0" stop-color="#f6f9fe"/><stop offset=".45" stop-color="#f3f7fe"/><stop offset="1" stop-color="#d9e6f8"/>
   </linearGradient>
-  <linearGradient id="slate-cloud-back" x1="0.2" y1="0" x2="0.65" y2="1">
+  <linearGradient id="wi-cloud-back" x1="0.2" y1="0" x2="0.65" y2="1">
     <stop offset="0" stop-color="#d9e2ee"/><stop offset="1" stop-color="#b9c6d8"/>
   </linearGradient>
-  <linearGradient id="slate-cloud-dark" x1="0.2" y1="0" x2="0.65" y2="1">
+  <linearGradient id="wi-cloud-dark" x1="0.2" y1="0" x2="0.65" y2="1">
     <stop offset="0" stop-color="#a3abb8"/><stop offset=".45" stop-color="#9aa2b0"/><stop offset="1" stop-color="#6b7383"/>
   </linearGradient>
-  <linearGradient id="slate-sun" x1="0.25" y1="0.05" x2="0.75" y2="0.95">
+  <linearGradient id="wi-sun" x1="0.25" y1="0.05" x2="0.75" y2="0.95">
     <stop offset="0" stop-color="#fcc537"/><stop offset=".45" stop-color="#fbbf24"/><stop offset="1" stop-color="#f59e0b"/>
   </linearGradient>
-  <linearGradient id="slate-moon" x1="0.25" y1="0.05" x2="0.75" y2="0.95">
+  <linearGradient id="wi-moon" x1="0.25" y1="0.05" x2="0.75" y2="0.95">
     <stop offset="0" stop-color="#a5d4e8"/><stop offset=".45" stop-color="#86c3db"/><stop offset="1" stop-color="#5eafcf"/>
   </linearGradient>
-  <linearGradient id="slate-bolt" x1="0.25" y1="0.05" x2="0.75" y2="0.95">
+  <linearGradient id="wi-bolt" x1="0.25" y1="0.05" x2="0.75" y2="0.95">
     <stop offset="0" stop-color="#fcd34d"/><stop offset=".45" stop-color="#f7b23b"/><stop offset="1" stop-color="#f59e0b"/>
   </linearGradient>
-  <radialGradient id="slate-hail" cx="0.38" cy="0.35" r="0.7">
+  <radialGradient id="wi-hail" cx="0.38" cy="0.35" r="0.7">
     <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c7dcf2"/>
   </radialGradient>`;
 
@@ -64,18 +64,18 @@ const CLOUD_D =
 const CLOUD_OPACITY = 0.85;
 const LINE_OPACITY = 0.9;
 
-const cloud = `<path opacity="${CLOUD_OPACITY}" fill="url(#slate-cloud)" stroke="#d3deee" stroke-width="0.5" d="${CLOUD_D}"/>`;
-const stormCloud = `<path opacity="${CLOUD_OPACITY}" fill="url(#slate-cloud-dark)" stroke="#7d8696" stroke-width="0.5" d="${CLOUD_D}"/>`;
+const cloud = `<path opacity="${CLOUD_OPACITY}" fill="url(#wi-cloud)" stroke="#d3deee" stroke-width="0.5" d="${CLOUD_D}"/>`;
+const stormCloud = `<path opacity="${CLOUD_OPACITY}" fill="url(#wi-cloud-dark)" stroke="#7d8696" stroke-width="0.5" d="${CLOUD_D}"/>`;
 /** A smaller, darker cloud up and to the right, behind the main one. */
-const backCloud = `<path opacity="${CLOUD_OPACITY}" fill="url(#slate-cloud-back)" stroke="#c0cbda" stroke-width="0.6" transform="translate(13 -9) scale(0.78)" d="${CLOUD_D}"/>`;
+const backCloud = `<path opacity="${CLOUD_OPACITY}" fill="url(#wi-cloud-back)" stroke="#c0cbda" stroke-width="0.6" transform="translate(13 -9) scale(0.78)" d="${CLOUD_D}"/>`;
 
-const sunCore = `<circle cx="32" cy="32" r="10.5" fill="url(#slate-sun)" stroke="#f6ad1d" stroke-width="0.5"/>`;
+const sunCore = `<circle cx="32" cy="32" r="10.5" fill="url(#wi-sun)" stroke="#f6ad1d" stroke-width="0.5"/>`;
 const sunRays = `<path fill="none" stroke="#fbbf24" stroke-linecap="round" stroke-width="3.4" d="M32 15.71V9.5m0 45v-6.21m11.52-27.81l4.39-4.39M16.09 47.91l4.39-4.39m0-23l-4.39-4.39m31.82 31.78l-4.39-4.39M15.71 32H9.5m45 0h-6.21"/>`;
-const smallSunCore = `<circle cx="19" cy="24" r="5.4" fill="url(#slate-sun)" stroke="#f6ad1d" stroke-width="0.5"/>`;
+const smallSunCore = `<circle cx="19" cy="24" r="5.4" fill="url(#wi-sun)" stroke="#f6ad1d" stroke-width="0.5"/>`;
 const smallSunRays = `<path fill="none" stroke="#fbbf24" stroke-linecap="round" stroke-width="2.6" d="M19 15.67V12.5m0 23v-3.17m5.89-14.22l2.24-2.24M10.87 32.13l2.24-2.24m0-11.78l-2.24-2.24m16.26 16.26l-2.24-2.24M7.5 24h3.17m19.83 0h-3.17"/>`;
 
-const moon = `<path fill="url(#slate-moon)" stroke="#6cb3d2" stroke-linejoin="round" stroke-width="0.5" d="M46.66 36.2a16.66 16.66 0 01-16.78-16.55 16.29 16.29 0 01.55-4.15A16.56 16.56 0 1048.5 36.1c-.61.06-1.22.1-1.84.1z"/>`;
-const smallMoon = `<path fill="url(#slate-moon)" stroke="#6cb3d2" stroke-linejoin="round" stroke-width="0.5" d="M29.33 26.68a10.61 10.61 0 01-10.68-10.54A10.5 10.5 0 0119 13.5a10.54 10.54 0 1011.5 13.11 11.48 11.48 0 01-1.17.07z"/>`;
+const moon = `<path fill="url(#wi-moon)" stroke="#6cb3d2" stroke-linejoin="round" stroke-width="0.5" d="M46.66 36.2a16.66 16.66 0 01-16.78-16.55 16.29 16.29 0 01.55-4.15A16.56 16.56 0 1048.5 36.1c-.61.06-1.22.1-1.84.1z"/>`;
+const smallMoon = `<path fill="url(#wi-moon)" stroke="#6cb3d2" stroke-linejoin="round" stroke-width="0.5" d="M29.33 26.68a10.61 10.61 0 01-10.68-10.54A10.5 10.5 0 0119 13.5a10.54 10.54 0 1011.5 13.11 11.48 11.48 0 01-1.17.07z"/>`;
 const star = (x: number, y: number, r: number) =>
   `<path fill="#e8f3fb" stroke="#86c3db" stroke-width="0.6" stroke-linejoin="round" d="M${x} ${y - r}L${x + r * 0.3} ${y - r * 0.3}L${x + r} ${y}L${x + r * 0.3} ${y + r * 0.3}L${x} ${y + r}L${x - r * 0.3} ${y + r * 0.3}L${x - r} ${y}L${x - r * 0.3} ${y - r * 0.3}Z"/>`;
 
@@ -95,9 +95,9 @@ const snowflake = (x: number, y: number) => {
   );
 };
 const hailstone = (x: number, y: number) =>
-  `<circle cx="${x}" cy="${y}" r="3.3" fill="url(#slate-hail)" stroke="#86acd8" stroke-width="0.6"/>`;
+  `<circle cx="${x}" cy="${y}" r="3.3" fill="url(#wi-hail)" stroke="#86acd8" stroke-width="0.6"/>`;
 
-const bolt = `<path fill="url(#slate-bolt)" stroke="#d98a0b" stroke-linejoin="round" stroke-width="0.5" d="M30 36l-4 12h4l-2 10 10-14h-6l4-8h-6z"/>`;
+const bolt = `<path fill="url(#wi-bolt)" stroke="#d98a0b" stroke-linejoin="round" stroke-width="0.5" d="M30 36l-4 12h4l-2 10 10-14h-6l4-8h-6z"/>`;
 
 const fogLine = (y: number, x1: number, x2: number) =>
   `<path opacity="${LINE_OPACITY}" fill="none" stroke="#d3d8df" stroke-linecap="round" stroke-width="3.6" d="M${x1} ${y}H${x2}"/>`;

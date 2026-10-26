@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { iconGlowBackground } from './icon-glow';
+import { iconGlowBackground } from './glow';
 
 describe('iconGlowBackground', () => {
   it('is on by default, darkest at the centre and transparent at its radius', () => {

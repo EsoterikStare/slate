@@ -214,4 +214,4 @@ add-on (override with `SLATE_DEPLOY_DIR`), then prints the resource URL with a
 
 Weather icons: Slate's own, redrawn from
 [Meteocons](https://github.com/basmilius/weather-icons) by Bas Milius (MIT
-licence, see `src/weather/METEOCONS-LICENSE.txt`).
+licence, see `src/icons/METEOCONS-LICENSE.txt`).

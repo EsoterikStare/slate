@@ -1,5 +1,6 @@
 // The soft dark glow behind each weather icon that separates it from a
-// bright photo (`icon_shadow` in slate-layout). One static radial gradient:
+// bright photo. Set --weather-icon-glow to iconGlowBackground(config) to
+// change it (slate-layout's `icon_shadow` does). One static radial gradient:
 // darkest at the centre, always fading to nothing at its radius.
 
 export interface IconGlowConfig {

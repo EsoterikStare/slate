@@ -20,8 +20,8 @@ import type { HomeAssistant } from '../ha/types';
 import { inWindow, parseTimeOfDay } from '../layout/night';
 import type { RowPlacement } from '../layout/screen';
 import { defaultPlacement, planScreen, rowsHeight } from '../layout/screen';
-import { iconGlowBackground, type IconGlowConfig } from '../layout/icon-glow';
 import { scrimBackground } from '../layout/scrim';
+import { iconGlowBackground, type IconGlowConfig } from '../icons/glow';
 import type { InsetConfig } from '../layout/inset';
 import { resolveInset } from '../layout/inset';
 import './slate-background';
@@ -404,7 +404,7 @@ export class SlateLayout extends LitElement {
         '--pad': `${cfg.padding ?? 16}px`,
         '--gap': `${cfg.gap ?? 24}px`,
         '--slate-text-shadow': cfg.text_shadow === false ? 'none' : null,
-        '--slate-icon-shadow':
+        '--weather-icon-glow':
           cfg.icon_shadow === undefined || cfg.icon_shadow === true ? null : iconGlowBackground(cfg.icon_shadow),
       })}
     >

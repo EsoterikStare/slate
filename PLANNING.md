@@ -175,8 +175,8 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
 - Configurable: forecast days, °F/°C (defaults to HA's unit), and which current
   conditions to show (e.g. feels-like, humidity, wind, precipitation).
 - **Icons (rebuilt 2026-10-26):** Slate's own layered icons
-  (`src/weather/icon-art.ts`), redrawn from Meteocons (Bas Milius, MIT; licence
-  in `src/weather/METEOCONS-LICENSE.txt`). The Meteocons originals were SMIL
+  (`src/icons/art.ts`), redrawn from Meteocons (Bas Milius, MIT; licence
+  in `src/icons/METEOCONS-LICENSE.txt`). The Meteocons originals were SMIL
   animations: on the Pi they re-rasterise every frame, and with the full-size
   Unsplash photo behind them the kiosk managed 0.7 fps (animations paused:
   60 fps), so they ticked about once a second.
@@ -205,6 +205,27 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
     than a frozen frame with a raindrop mid-fade.
   - The Storybook story "Weather/Icons" shows every icon beside the Meteocons
     original it replaced.
+- **Icon library, ready to split off (decided 2026-10-26):** the icons live
+  in `src/icons` (entry point `index.ts`) and import nothing from the
+  dashboard; `src/icons/boundary.test.ts` fails if they do (stories exempt).
+  When it's wanted, it becomes a second package in this repo (a pnpm
+  workspace) before any separate repo or npm publishing.
+  - Services describe the weather rather than naming icons: a
+    `WeatherDescription` (cloud cover, precipitation type and intensity,
+    showers, thunder, reduced visibility, wind, night). Each service gets an
+    adapter (`src/icons/adapters/`; Home Assistant so far), and
+    `resolveIcon()` picks the closest icon with artwork, in priority order
+    thunder → precipitation → visibility → wind → clouds. Detail with no
+    artwork yet falls back (drizzle → rain, freezing rain → sleet, haze →
+    fog), so any service works now and its icons sharpen as artwork is
+    added (drizzle as thin lines, showers, light/heavy snow, haze, smoke,
+    dust, tornado, …), without changing callers.
+  - `<slate-weather-icon>` takes an `icon` name or a `description`; it no
+    longer knows about HA. The weather card resolves the name itself
+    (a string, so re-renders don't hand the icon a new object each time).
+  - Internal ids and keyframes use a neutral `wi-` prefix; the glow is
+    overridden with `--weather-icon-glow` (slate-layout sets it from
+    `icon_shadow`). The tag is still `slate-weather-icon` until the split.
 - **One card, two placements:** `show: current | forecast | both`, so
   slate-layout can put current conditions beside the clock and the forecast
   strip full-width underneath.
@@ -241,7 +262,7 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
     declared per element so it scales with each font size. On by default
     (`text_shadow`).
   - **Icon shadow:** a soft dark glow behind each weather icon
-    (`src/layout/icon-glow.ts`); a static gradient, so it costs nothing per
+    (`src/icons/glow.ts`); a static gradient, so it costs nothing per
     animation frame. `icon_shadow` is on by default, `false` omits it, or
     `{ radius, opacity }` sets its radius (fraction of the icon's width,
     default 0.65, up to 1) and centre darkness (default 0.22). It always
