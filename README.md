@@ -190,15 +190,19 @@ it may need LAN connections allowed.
 
 **Setting up a Raspberry Pi kiosk:** on a fresh Raspberry Pi OS (64-bit,
 desktop), copy `scripts/pi/setup-kiosk.sh` to the Pi and run it as the desktop
-user. It updates the system, enables automatic security updates, turns off
-screen blanking and Wi-Fi power saving, starts Chromium in kiosk mode on your
-dashboard at login (restarting it if it exits), and optionally rotates the
-screen, hides the cursor and shows text boot messages:
+user. At boot the Pi then logs straight into a minimal kiosk session (no
+desktop, taskbar or mouse cursor) showing your dashboard in Chromium,
+restarted if it ever exits. The script also updates the system, enables
+automatic security updates, turns off screen blanking and Wi-Fi power saving,
+and can rotate the screen and choose the boot screen (`splash`, scrolling
+`text`, or `silent` black):
 
 ```bash
-./setup-kiosk.sh --url "http://<ha-ip>:8123/<dashboard-path>" --rotate 90 --text-boot
+./setup-kiosk.sh --url "http://<ha-ip>:8123/<dashboard-path>" --rotate 90 --boot silent
 ```
 
+For maintenance, `./setup-kiosk.sh --desktop` makes the Pi log into the normal
+desktop again (re-run with `--url` to go back to the kiosk).
 Run `./setup-kiosk.sh --help` for all options.
 
 **A real build on the kiosk:** `pnpm deploy:dev` builds and copies the bundle
