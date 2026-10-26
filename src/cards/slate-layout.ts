@@ -20,6 +20,7 @@ import type { HomeAssistant } from '../ha/types';
 import { inWindow, parseTimeOfDay } from '../layout/night';
 import type { RowPlacement } from '../layout/screen';
 import { defaultPlacement, planScreen, rowsHeight } from '../layout/screen';
+import { scrimBackground } from '../layout/scrim';
 import './slate-background';
 import type { SlateBackground } from './slate-background';
 
@@ -50,6 +51,12 @@ export interface SlateLayoutConfig {
   gap?: number;
   /** `docked`: edge-to-edge calendar on black, photo above it. `floating`: card over a full-screen photo. */
   bottom_style?: 'docked' | 'floating';
+  /** Darkness (0–1) of the soft gradient laid over the photo behind text; 0 turns it off. */
+  scrim?: number;
+  /** Layered shadow behind clock and weather text (default on). */
+  text_shadow?: boolean;
+  /** Drop shadow behind weather icons (default on). */
+  icon_shadow?: boolean;
   background?: BackgroundConfig & { fade_seconds?: number };
   night?: { start: string; end: string; brightness?: number };
   /** Reload the page after the HA connection has been down this many seconds. `false` disables. */
@@ -104,6 +111,7 @@ export class SlateLayout extends LitElement {
     _collapsed: { state: true },
     _unit: { state: true },
     _night: { state: true },
+    _scrim: { state: true },
   };
 
   declare hass?: HomeAssistant;
@@ -115,6 +123,8 @@ export class SlateLayout extends LitElement {
   declare _collapsed: boolean;
   declare _unit: number;
   declare _night: boolean;
+  /** CSS background of the scrim layer (see ../layout/scrim.ts). */
+  declare _scrim: string;
 
   /** Overrides DOM measurement; for tests, where nothing has layout. */
   measure?: () => LayoutMeasurement;
@@ -133,11 +143,15 @@ export class SlateLayout extends LitElement {
     this._collapsed = false;
     this._unit = 0;
     this._night = false;
+    this._scrim = 'none';
   }
 
   setConfig(config: SlateLayoutConfig): void {
     if (!config.top?.length && !config.bottom) throw new Error('slate-layout: add `top` rows and/or a `bottom` card');
     if (config.background) validateBackground(config.background);
+    if (config.scrim !== undefined && !(config.scrim >= 0 && config.scrim <= 1)) {
+      throw new Error('slate-layout: `scrim` must be between 0 and 1');
+    }
     for (const r of config.top ?? []) {
       const p = toRow(r).placement;
       if (p !== undefined && p !== 'top' && p !== 'stack' && p !== 'hidden') {
@@ -299,6 +313,24 @@ export class SlateLayout extends LitElement {
     if (this._bottom && this._bottom.availableHeight !== plan.bottomAvailable) {
       this._bottom.availableHeight = plan.bottomAvailable;
     }
+
+    // Scrim bands cover the text that's actually showing over the photo.
+    const pad = this._config.padding ?? 16;
+    const shown = rows.filter((r) => !(r.collapsible && plan.collapseTop));
+    const groupHeight = (p: 'top' | 'stack') => {
+      const g = shown.filter((r) => r.placement === p);
+      return g.length ? g.reduce((sum, r) => sum + r.height, 0) + (g.length - 1) * m.rowGap : 0;
+    };
+    const header = groupHeight('top');
+    const stack = groupHeight('stack');
+    // Docked, the photo ends at the calendar; floating, it runs under the
+    // calendar card to the screen's bottom edge.
+    const belowStack = this._docked ? 0 : pad + Math.min(m.bottomNatural, plan.bottomAvailable);
+    this._scrim = scrimBackground({
+      top: header ? pad + header : 0,
+      bottom: stack ? belowStack + gap + stack : 0,
+      strength: this._config.scrim ?? 0.5,
+    });
   };
 
   protected override render() {
@@ -323,10 +355,11 @@ export class SlateLayout extends LitElement {
     const header = group('top', 'header');
     const top = group('stack', 'top');
     const bottom = this._bottom ? html`<div class="bottom">${this._bottom}</div>` : nothing;
+    const scrim = html`<div class="scrim" style=${styleMap({ backgroundImage: this._scrim })}></div>`;
     const body = this._docked
-      ? html`<div class="photo">${this._background ?? nothing}${header}${top}</div>
+      ? html`<div class="photo">${this._background ?? nothing}${scrim}${header}${top}</div>
           ${bottom}`
-      : html`${this._background ?? nothing}${header}
+      : html`${this._background ?? nothing}${scrim}${header}
           <div class="stack">${top}${bottom}</div>`;
     return html`<div
       class=${classMap({ screen: true, docked: this._docked, floating: !this._docked })}
@@ -335,6 +368,8 @@ export class SlateLayout extends LitElement {
         '--slate-scale': String(cfg.scale ?? 1),
         '--pad': `${cfg.padding ?? 16}px`,
         '--gap': `${cfg.gap ?? 24}px`,
+        '--slate-text-shadow': cfg.text_shadow === false ? 'none' : null,
+        '--slate-icon-shadow': cfg.icon_shadow === false ? 'none' : null,
       })}
     >
       ${body}
@@ -369,6 +404,11 @@ export class SlateLayout extends LitElement {
       display: flex;
       flex-direction: column;
       row-gap: 16px;
+    }
+    .scrim {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
     }
     /* Rows pinned to the top of the screen, over the photo. */
     .header {

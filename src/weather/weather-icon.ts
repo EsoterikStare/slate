@@ -47,6 +47,10 @@ export class SlateWeatherIcon extends LitElement {
       width: 1em;
       height: 1em;
       line-height: 0;
+      /* Separates the icon from bright photos; costs a little GPU per
+         animation frame, so it's overridable (slate-layout sets \`none\` when
+         icon_shadow is off). */
+      filter: var(--slate-icon-shadow, drop-shadow(0 0 0.03em rgba(0, 0, 0, 0.55)) drop-shadow(0 0.02em 0.08em rgba(0, 0, 0, 0.4)));
     }
     svg {
       width: 100%;

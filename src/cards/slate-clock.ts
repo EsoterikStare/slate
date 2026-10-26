@@ -95,10 +95,15 @@ export class SlateClock extends LitElement {
       color: var(--slate-text-color, #fff);
       font-family: var(--slate-font-family, var(--primary-font-family, Roboto, system-ui, sans-serif));
     }
-    .clock {
-      /* Not a size container: inline-size containment would zero this card's
-         natural width and wrap every word when placed side by side. */
-      text-shadow: 0 0.04em 0.25em rgba(0, 0, 0, 0.5);
+    /* Not a size container: inline-size containment would zero this card's
+       natural width and wrap every word when placed side by side.
+       Shadow: a tight dark edge keeps glyphs crisp on bright photos, a wide
+       soft halo separates them from busy ones. Declared on every element so
+       its em sizes follow each element's own font size. Overridable (or
+       \`none\`) via --slate-text-shadow. */
+    .clock,
+    .clock * {
+      text-shadow: var(--slate-text-shadow, 0 0 0.05em rgba(0, 0, 0, 0.6), 0 0.02em 0.12em rgba(0, 0, 0, 0.5), 0 0 0.6em rgba(0, 0, 0, 0.35));
     }
     .time {
       ${roleFontSize('time', 13)}

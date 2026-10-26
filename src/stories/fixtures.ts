@@ -100,3 +100,56 @@ export const photos = [
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920"><defs><linearGradient id="g" x1="0" y1="0" x2="0.4" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="0.55" stop-color="${b}"/><stop offset="1" stop-color="${c}"/></linearGradient></defs><rect width="1080" height="1920" fill="url(#g)"/><circle cx="820" cy="420" r="160" fill="#fff" opacity="0.12"/><path d="M0 1300 L300 1000 L520 1200 L760 900 L1080 1250 L1080 1920 L0 1920Z" fill="#000" opacity="0.25"/></svg>`,
     ),
 );
+
+/** Deterministic pseudo-random numbers, so generated "photos" look the same every run. */
+function seeded(seed: number) {
+  return () => {
+    seed = (seed * 16807) % 2147483647;
+    return seed / 2147483647;
+  };
+}
+
+const svgUri = (body: string) =>
+  'data:image/svg+xml,' +
+  encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1920" preserveAspectRatio="xMidYMid slice">${body}</svg>`);
+
+/**
+ * Backgrounds chosen to be hard on white text: a bright sky with clouds where
+ * the text sits, near-white snow, and busy high-contrast foliage.
+ */
+export const hardPhotos: Record<'sky' | 'snow' | 'foliage', string> = {
+  sky: (() => {
+    const r = seeded(7);
+    const clouds = Array.from({ length: 26 }, () => {
+      const x = r() * 1080;
+      const y = 80 + r() * 1300;
+      const w = 160 + r() * 260;
+      return `<ellipse cx="${x}" cy="${y}" rx="${w}" ry="${w * 0.42}" fill="#fff" opacity="${0.75 + r() * 0.25}"/>`;
+    }).join('');
+    return svgUri(
+      `<defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9cc9ef"/><stop offset="1" stop-color="#e3f1fb"/></linearGradient></defs><rect width="1080" height="1920" fill="url(#s)"/>${clouds}`,
+    );
+  })(),
+  snow: (() => {
+    const r = seeded(11);
+    const drifts = Array.from({ length: 14 }, () => {
+      const y = 200 + r() * 1500;
+      return `<ellipse cx="${r() * 1080}" cy="${y}" rx="${300 + r() * 400}" ry="${60 + r() * 90}" fill="#dfe6ee" opacity="0.7"/>`;
+    }).join('');
+    const trees = Array.from({ length: 6 }, () => {
+      const x = r() * 1080;
+      const y = 300 + r() * 600;
+      return `<path d="M${x} ${y} l-40 140 h80 z" fill="#8a9aa6" opacity="0.5"/>`;
+    }).join('');
+    return svgUri(`<rect width="1080" height="1920" fill="#f4f7fa"/>${drifts}${trees}`);
+  })(),
+  foliage: (() => {
+    const r = seeded(23);
+    const colors = ['#1e3d1a', '#2f6b25', '#7fb83f', '#c9e27a', '#f2e66b', '#0f1f0d', '#a7d65a'];
+    const leaves = Array.from({ length: 900 }, () => {
+      const c = colors[Math.floor(r() * colors.length)];
+      return `<ellipse cx="${r() * 1080}" cy="${r() * 1920}" rx="${12 + r() * 38}" ry="${6 + r() * 16}" transform="rotate(${r() * 180})" fill="${c}"/>`;
+    }).join('');
+    return svgUri(`<rect width="1080" height="1920" fill="#3d7a2e"/>${leaves}`);
+  })(),
+};

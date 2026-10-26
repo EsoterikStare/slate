@@ -159,6 +159,40 @@ describe('slate-layout', () => {
     expect(rows()[1]!.classList.contains('collapsed')).toBe(false);
   });
 
+  describe('legibility over the photo', () => {
+    const scrim = () => root().querySelector<HTMLElement>('.scrim')!.style.backgroundImage;
+    const screenVar = (name: string) => root().querySelector<HTMLElement>('.screen')!.style.getPropertyValue(name);
+
+    it('darkens a band behind the pinned forecast and one behind the clock', async () => {
+      await mount();
+      // Top: padding 16 + forecast 200. Bottom (docked): gap 24 + clock row 300.
+      expect(scrim()).toContain('linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0px, rgba(0, 0, 0, 0.3) 216px');
+      expect(scrim()).toContain('linear-gradient(to top, rgba(0, 0, 0, 0.5) 0px, rgba(0, 0, 0, 0.3) 324px');
+    });
+
+    it('drops the top band when the forecast folds away', async () => {
+      await mount();
+      measured.bottomNatural = 1400;
+      calendar().dispatchEvent(new CustomEvent('slate-natural-height', { detail: 1400, bubbles: true, composed: true }));
+      await settle();
+      expect(scrim()).not.toContain('to bottom');
+      expect(scrim()).toContain('to top');
+    });
+
+    it('can turn the scrim and both shadows off', async () => {
+      await mount(config({ scrim: 0, text_shadow: false, icon_shadow: false }));
+      expect(scrim()).toBe('none');
+      expect(screenVar('--slate-text-shadow')).toBe('none');
+      expect(screenVar('--slate-icon-shadow')).toBe('none');
+    });
+
+    it('leaves the shadows at their defaults unless turned off', async () => {
+      await mount();
+      expect(screenVar('--slate-text-shadow')).toBe('');
+      expect(screenVar('--slate-icon-shadow')).toBe('');
+    });
+  });
+
   describe('night dimming', () => {
     const night = { start: '22:00', end: '06:00', brightness: 0.25 };
     const dimOpacity = () => root().querySelector<HTMLElement>('.dim')!.style.opacity;
@@ -239,6 +273,7 @@ describe('slate-layout', () => {
     [{ night: { start: '22:00', end: '06:00', brightness: 2 } }, /brightness/],
     [{ background: {} }, /background/],
     [{ bottom_style: 'sideways' }, /bottom_style/],
+    [{ scrim: 1.5 }, /scrim/],
     [{ top: [{ cards: [], placement: 'middle' }] }, /placement/],
   ])('rejects bad config %j', (bad, message) => {
     const l = document.createElement('slate-layout');
