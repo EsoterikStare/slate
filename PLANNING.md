@@ -280,6 +280,25 @@ cards:
       # ...
 ```
 
+### Kiosk session (decided 2026-10-26)
+- The Pi auto-logs into a dedicated "Slate kiosk" Wayland session (labwc
+  with its own config folder) instead of the Raspberry Pi desktop, so the
+  desktop never shows. It starts only kanshi (rotation), the cursor hide and
+  the kiosk browser. An invisible cursor theme hides the pointer from the
+  first frame. `setup-kiosk.sh --desktop` switches back for maintenance.
+- `--boot silent` moves kernel messages to tty3 and adds `quiet loglevel=3
+  logo.nologo vt.global_cursor_default=0`, disables the firmware rainbow and
+  the tty1 login prompt. Confirmed in /proc/cmdline on the Pi.
+- **Known gap:** some text still scrolls on screen during boot with
+  `--boot silent`. It isn't the kernel or the login prompt; its source wasn't
+  identified (possibly firmware/bootloader output). Accepted as cosmetic for
+  now. Next step if revisited: `sudo cat /dev/vcs1` after boot to see what
+  was printed on the screen's console.
+- Lesson from the first `--boot` attempt, which emptied cmdline.txt: never
+  read and rewrite a file in one pipeline, and remember cmdline.txt has no
+  trailing newline. `set_boot_cmdline` now validates (`root=` must survive)
+  and has regression tests.
+
 ## Open questions
 - How time-zone and DST edge cases look in multi-day bars. Settle during
   implementation, with tests.
