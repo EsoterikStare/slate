@@ -23,6 +23,11 @@ describe('findProblems', () => {
     ).toEqual([]);
   });
 
+  it('does not mistake systemd template units for email addresses', () => {
+    expect(kinds(['sudo systemctl disable getty@tty1.service', 'openvpn@home.socket'].join('\n'))).toEqual([]);
+    expect(kinds(at('someone', 'service.test'))).toEqual([`1:email address:${at('someone', 'service.test')}`]);
+  });
+
   it('flags private and carrier-grade-NAT IP addresses, not public or placeholder ones', () => {
     const lan = ip(192, 168, 0, 10);
     const ten = ip(10, 0, 0, 5);

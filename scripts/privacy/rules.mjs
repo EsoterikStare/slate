@@ -11,6 +11,8 @@ const ALLOWED_EMAIL = [
 ];
 
 const EMAIL = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+// systemd template units look like emails (getty@tty1.service) but aren't.
+const SYSTEMD_UNIT = /@[A-Za-z0-9._-]*\.(service|socket|timer|target|mount|path|slice|scope|device)$/;
 // RFC 1918 private ranges, plus 100.64/10 (carrier-grade NAT, used by Tailscale).
 const PRIVATE_IP =
   /\b(?:10\.\d{1,3}|192\.168|172\.(?:1[6-9]|2\d|3[01])|100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7]))\.\d{1,3}\.\d{1,3}\b/g;
@@ -39,7 +41,8 @@ export function findProblems(text, denylist = []) {
   lines.forEach((line, i) => {
     const at = i + 1;
     for (const m of line.matchAll(EMAIL)) {
-      if (!ALLOWED_EMAIL.some((a) => a.test(m[0]))) problems.push({ line: at, kind: 'email address', match: m[0] });
+      if (SYSTEMD_UNIT.test(m[0]) || ALLOWED_EMAIL.some((a) => a.test(m[0]))) continue;
+      problems.push({ line: at, kind: 'email address', match: m[0] });
     }
     for (const m of line.matchAll(PRIVATE_IP)) problems.push({ line: at, kind: 'private IP address', match: m[0] });
     for (const m of line.matchAll(WINDOWS_HOME)) {
