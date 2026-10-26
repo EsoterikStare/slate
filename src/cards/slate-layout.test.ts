@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createFakeHass } from '../ha/fake-hass';
 import type { HomeAssistant } from '../ha/types';
+import { iconGlowBackground } from '../layout/icon-glow';
 import './slate-calendar';
 import './slate-clock';
 import './slate-layout';
@@ -221,6 +222,11 @@ describe('slate-layout', () => {
       expect(scrim()).toBe('none');
       expect(screenVar('--slate-text-shadow')).toBe('none');
       expect(screenVar('--slate-icon-shadow')).toBe('none');
+    });
+
+    it('passes a configured icon glow through to the icons', async () => {
+      await mount(config({ icon_shadow: { radius: 0.9, opacity: 0.5 } }));
+      expect(screenVar('--slate-icon-shadow')).toBe(iconGlowBackground({ radius: 0.9, opacity: 0.5 }));
     });
 
     it('leaves the shadows at their defaults unless turned off', async () => {

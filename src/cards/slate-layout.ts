@@ -20,6 +20,7 @@ import type { HomeAssistant } from '../ha/types';
 import { inWindow, parseTimeOfDay } from '../layout/night';
 import type { RowPlacement } from '../layout/screen';
 import { defaultPlacement, planScreen, rowsHeight } from '../layout/screen';
+import { iconGlowBackground, type IconGlowConfig } from '../layout/icon-glow';
 import { scrimBackground } from '../layout/scrim';
 import type { InsetConfig } from '../layout/inset';
 import { resolveInset } from '../layout/inset';
@@ -64,8 +65,8 @@ export interface SlateLayoutConfig {
   scrim?: number;
   /** Layered shadow behind clock and weather text (default on). */
   text_shadow?: boolean;
-  /** Drop shadow behind weather icons (default on). */
-  icon_shadow?: boolean;
+  /** Soft glow behind weather icons: on by default, `false` to omit, or a radius and centre opacity. */
+  icon_shadow?: boolean | IconGlowConfig;
   background?: BackgroundConfig & { fade_seconds?: number };
   night?: { start: string; end: string; brightness?: number };
   /** Reload the page after the HA connection has been down this many seconds. `false` disables. */
@@ -403,7 +404,8 @@ export class SlateLayout extends LitElement {
         '--pad': `${cfg.padding ?? 16}px`,
         '--gap': `${cfg.gap ?? 24}px`,
         '--slate-text-shadow': cfg.text_shadow === false ? 'none' : null,
-        '--slate-icon-shadow': cfg.icon_shadow === false ? 'none' : null,
+        '--slate-icon-shadow':
+          cfg.icon_shadow === undefined || cfg.icon_shadow === true ? null : iconGlowBackground(cfg.icon_shadow),
       })}
     >
       ${body}

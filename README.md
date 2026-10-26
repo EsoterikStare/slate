@@ -73,7 +73,9 @@ views:
         inset: { left: 8, right: 8 }   # move content in from the edges (cropping monitors); backgrounds stay full-bleed
         scrim: 0.2                     # soft gradient behind text on the photo (0 = off, up to 1)
         text_shadow: true              # layered shadow on clock and weather text
-        icon_shadow: true              # soft glow behind weather icons
+        icon_shadow:                   # soft glow behind weather icons (false = none; true = defaults)
+          radius: 0.65                 # fraction of the icon's width (0.1–1)
+          opacity: 0.22                # darkness at the centre (0–1); always fades to 0 at the radius
         top:
           - - type: custom:slate-clock
               time_format: 12

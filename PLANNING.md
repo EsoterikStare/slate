@@ -236,9 +236,13 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
   - **Text shadow:** layered (a tight dark edge plus a wide soft halo),
     declared per element so it scales with each font size. On by default
     (`text_shadow`).
-  - **Icon shadow:** a soft dark glow behind each weather icon. On by
-    default (`icon_shadow`); a static gradient, so it costs nothing per
-    animation frame.
+  - **Icon shadow:** a soft dark glow behind each weather icon
+    (`src/layout/icon-glow.ts`); a static gradient, so it costs nothing per
+    animation frame. `icon_shadow` is on by default, `false` omits it, or
+    `{ radius, opacity }` sets its radius (fraction of the icon's width,
+    default 0.65, up to 1) and centre darkness (default 0.22). It always
+    fades to transparent at the radius, with a long eased tail so no edge
+    shows.
 - Compared over a bright sky, snow and busy foliage in the Storybook story
   "Dashboard/Legibility comparison". Shadows alone weren't enough on white
   areas. The gradient carries most of the load there, and the shadows help

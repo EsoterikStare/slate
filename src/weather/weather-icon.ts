@@ -4,10 +4,11 @@
 // re-rasterising, so animations stay fluid on a Raspberry Pi. (The Meteocons
 // SMIL icons this replaces re-rasterised every frame: under 1 fps there.)
 
-import { css, html, LitElement } from 'lit';
+import { css, html, LitElement, unsafeCSS } from 'lit';
 import { classMap } from 'lit/directives/class-map.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { unsafeSVG } from 'lit/directives/unsafe-svg.js';
+import { iconGlowBackground } from '../layout/icon-glow';
 import { conditionIcon } from './conditions';
 import type { Layer, Motion } from './icon-art';
 import { DEFS, ICON_ART } from './icon-art';
@@ -110,13 +111,13 @@ export class SlateWeatherIcon extends LitElement {
     /* A soft dark glow behind the whole icon separates it from bright photos.
        One static gradient: nothing to redraw per frame, and unlike per-shape
        drop shadows it never shades one part of the icon onto another.
-       slate-layout sets the variable to none when icon_shadow is off. */
+       slate-layout sets the variable from its icon_shadow option. The layer
+       is twice the icon's size (see GLOW_BOX_SCALE). */
     .icon::before {
       content: '';
       position: absolute;
-      inset: -15%;
-      display: var(--slate-icon-shadow, block);
-      background: radial-gradient(closest-side, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.12) 50%, rgba(0, 0, 0, 0.04) 80%, transparent);
+      inset: -50%;
+      background: var(--slate-icon-shadow, ${unsafeCSS(iconGlowBackground())});
     }
     /* Still icons show each layer's artwork where it was drawn (a paused
        animation could freeze a raindrop mid-fade, invisible). */
