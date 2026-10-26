@@ -182,8 +182,13 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
   60 fps), so they ticked about once a second.
   - Each icon is a stack of static SVG layers. Animation only moves or fades
     whole layers with CSS `transform`/`opacity`, which the GPU composites
-    without redrawing them. The drop shadow is an SVG filter baked into each
-    layer once, not a CSS filter recomputed per frame.
+    without redrawing them.
+  - Separation from the photo is one soft, dark radial glow behind each icon
+    (a static CSS gradient), not a drop shadow. Per-shape drop shadows drew a
+    dark rim that read as a heavy outline, and shaded parts of the icon onto
+    each other (a cloud's shadow on the sun behind it, fog lines stacking
+    into a grey band). The glow costs nothing per frame. Outline strokes are
+    thin and close to each fill colour, so shapes stay soft.
   - One weight across the set: same cloud, 3.4–3.6 unit strokes for rain, fog
     and wind, larger outlined snowflakes and hail, precipitation resting fully
     below the cloud.
@@ -231,9 +236,9 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
   - **Text shadow:** layered (a tight dark edge plus a wide soft halo),
     declared per element so it scales with each font size. On by default
     (`text_shadow`).
-  - **Icon shadow:** a drop shadow on weather icons. On by default
-    (`icon_shadow`); it's drawn into each icon layer once, so it costs nothing
-    per animation frame.
+  - **Icon shadow:** a soft dark glow behind each weather icon. On by
+    default (`icon_shadow`); a static gradient, so it costs nothing per
+    animation frame.
 - Compared over a bright sky, snow and busy foliage in the Storybook story
   "Dashboard/Legibility comparison". Shadows alone weren't enough on white
   areas. The gradient carries most of the load there, and the shadows help

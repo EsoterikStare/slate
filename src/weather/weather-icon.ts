@@ -72,7 +72,7 @@ export class SlateWeatherIcon extends LitElement {
       ${ICON_ART[this.icon].map(
         (layer) =>
           html`<div class=${classMap({ layer: true, moving: !!layer.motion })} style=${styleMap(layerStyle(layer))}>
-            <svg viewBox="0 0 64 64" aria-hidden="true"><g class="art">${unsafeSVG(layer.art)}</g></svg>
+            <svg viewBox="0 0 64 64" aria-hidden="true">${unsafeSVG(layer.art)}</svg>
           </div>`,
       )}
     </div>`;
@@ -90,7 +90,7 @@ export class SlateWeatherIcon extends LitElement {
       width: 100%;
       height: 100%;
     }
-    /* Holds the shared gradients and shadow; display: none would stop
+    /* Holds the shared gradients; display: none would stop
        url(#…) references from resolving in some browsers. */
     .defs {
       position: absolute;
@@ -107,10 +107,16 @@ export class SlateWeatherIcon extends LitElement {
       height: 100%;
       overflow: visible;
     }
-    /* The shadow is drawn into each layer's texture once, not per frame.
+    /* A soft dark glow behind the whole icon separates it from bright photos.
+       One static gradient: nothing to redraw per frame, and unlike per-shape
+       drop shadows it never shades one part of the icon onto another.
        slate-layout sets the variable to none when icon_shadow is off. */
-    .art {
-      filter: var(--slate-icon-shadow, url(#slate-icon-shadow));
+    .icon::before {
+      content: '';
+      position: absolute;
+      inset: -15%;
+      display: var(--slate-icon-shadow, block);
+      background: radial-gradient(closest-side, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.12) 50%, rgba(0, 0, 0, 0.04) 80%, transparent);
     }
     /* Still icons show each layer's artwork where it was drawn (a paused
        animation could freeze a raindrop mid-fade, invisible). */

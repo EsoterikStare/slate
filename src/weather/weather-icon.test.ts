@@ -45,9 +45,4 @@ describe('<slate-weather-icon>', () => {
     await el.updateComplete;
     expect(el.renderRoot.querySelector('.icon')?.classList.contains('paused')).toBe(false);
   });
-
-  it('carries the shadow filter its layers reference', async () => {
-    const el = await icon({ condition: 'cloudy' });
-    expect(el.renderRoot.querySelector('.defs filter#slate-icon-shadow')).not.toBeNull();
-  });
 });
