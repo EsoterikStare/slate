@@ -160,10 +160,17 @@ HA restart — `reload_after` covers that last one.
 
 ```bash
 pnpm install
+git config core.hooksPath .githooks   # privacy check on every commit (see below)
 pnpm test          # unit + component tests
 pnpm storybook     # every card, plus the full 1080×1920 kiosk, with fake HA data
 pnpm build         # dist/slate.js
 ```
+
+**Privacy check:** this repo is public, so commits are scanned for personal
+data (email addresses, private IPs, Windows user folders, and a non-noreply
+author). Put your own names, usernames, entity names and IDs in a local
+`.privacy-denylist` file, one per line. It's git-ignored, and commits
+containing any of them are blocked too.
 
 **Against your real HA, live:** run `pnpm dev`, allow port 5173 through
 Windows Firewall (private networks only):

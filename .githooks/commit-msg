@@ -1,0 +1,3 @@
+#!/bin/sh
+# Blocks commit messages that would publish personal data (see scripts/privacy/).
+exec node scripts/privacy/check.mjs --message "$1"

@@ -24,7 +24,7 @@ export default defineConfig({
   },
   test: {
     environment: 'happy-dom',
-    include: ['src/**/*.test.ts'],
+    include: ['src/**/*.test.ts', 'scripts/**/*.test.mjs'],
     // Pin a zone with DST so date tests exercise 23h/25h days on any machine.
     env: { TZ: 'America/Los_Angeles' },
   },

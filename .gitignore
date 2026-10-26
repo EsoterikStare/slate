@@ -150,3 +150,6 @@ vite.config.ts.timestamp-*
 
 # Storybook
 storybook-static/
+
+# Personal terms for the privacy check: local only, never committed
+.privacy-denylist
