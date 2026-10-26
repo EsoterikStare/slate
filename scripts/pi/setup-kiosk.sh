@@ -13,6 +13,7 @@
 #                    Wayland transform (counter-clockwise). Default: unchanged.
 #   --output NAME    display to rotate, e.g. HDMI-A-1 (default: the connected one)
 #   --show-cursor    keep the mouse cursor visible
+#   --text-boot      show the scrolling boot messages instead of the splash
 #   --no-upgrade     skip `apt full-upgrade`
 #
 # Targets the labwc desktop (Raspberry Pi OS Trixie; Bookworm late-2024 on).
@@ -24,6 +25,7 @@ URL=""
 ROTATE=""
 OUTPUT=""
 HIDE_CURSOR=1
+TEXT_BOOT=0
 UPGRADE=1
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -31,8 +33,9 @@ while [[ $# -gt 0 ]]; do
     --rotate) ROTATE="$2"; shift 2 ;;
     --output) OUTPUT="$2"; shift 2 ;;
     --show-cursor) HIDE_CURSOR=0; shift ;;
+    --text-boot) TEXT_BOOT=1; shift ;;
     --no-upgrade) UPGRADE=0; shift ;;
-    -h|--help) sed -n '2,19p' "$0"; exit 0 ;;
+    -h|--help) sed -n '2,20p' "$0"; exit 0 ;;
     *) echo "unknown option: $1" >&2; exit 2 ;;
   esac
 done
@@ -84,6 +87,12 @@ printf 'APT::Periodic::Update-Package-Lists "1";\nAPT::Periodic::Unattended-Upgr
 
 step "Disabling screen blanking"
 sudo raspi-config nonint do_blanking 1
+
+if [[ "$TEXT_BOOT" -eq 1 ]]; then
+  step "Showing boot messages instead of the splash screen"
+  # Removes `quiet splash` from the kernel command line.
+  sudo raspi-config nonint do_boot_splash 1
+fi
 
 step "Turning off Wi-Fi power saving"
 # Power-save naps between packets add latency and drop the dashboard's
