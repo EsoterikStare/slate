@@ -200,6 +200,16 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
     "drizzle" drops read as a sprinkle and vanished at a distance). HA's two
     intensities: `rainy` → three lines; `pouring` → five longer, faster lines
     under a darker cloud. Storm rain falls either side of the bolt.
+  - Known gap (2026-10-26, left for later): in Firefox-based browsers (seen
+    in Zen) the slow slides (cloud drift, fog, wind) step instead of gliding,
+    apparently because Firefox keeps moved layers on whole pixels. Chromium
+    (the kiosk, the Claude app's browser) is smooth; fast rain and rotating
+    sun/moon are smooth everywhere. The old SMIL Meteocons cloud glided in
+    Firefox because it was redrawn every frame, the cost that made it under
+    1 fps on the Pi. Tried and didn't help: a 0.01° or 0.2° rotation, no
+    `will-change`, a 3D transform, a 4× layer scaled down. If it matters
+    later: a Firefox-only fallback that animates the shape inside the SVG
+    for the slow slides.
   - `animations: false` (and night dimming, and reduced-motion) drops the
     animation entirely, so a still icon shows every layer in place rather
     than a frozen frame with a raindrop mid-fade.
