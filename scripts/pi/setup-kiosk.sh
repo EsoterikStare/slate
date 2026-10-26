@@ -26,31 +26,6 @@
 
 set -euo pipefail
 
-URL=""
-ROTATE=""
-OUTPUT=""
-BOOT=""
-HIDE_CURSOR=1
-UPGRADE=1
-DESKTOP=0
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --url) URL="$2"; shift 2 ;;
-    --rotate) ROTATE="$2"; shift 2 ;;
-    --output) OUTPUT="$2"; shift 2 ;;
-    --boot) BOOT="$2"; shift 2 ;;
-    --text-boot) BOOT=text; shift ;; # older name for --boot text
-    --show-cursor) HIDE_CURSOR=0; shift ;;
-    --no-upgrade) UPGRADE=0; shift ;;
-    --desktop) DESKTOP=1; shift ;;
-    -h|--help) sed -n '2,26p' "$0"; exit 0 ;;
-    *) echo "unknown option: $1" >&2; exit 2 ;;
-  esac
-done
-
-[[ "$(id -u)" -ne 0 ]] || { echo "run as the desktop user, not root" >&2; exit 2; }
-command -v labwc >/dev/null || { echo "labwc not found: this script targets the Raspberry Pi OS labwc desktop" >&2; exit 1; }
-
 KIOSK_SESSION=slate-kiosk
 DESKTOP_SESSION=rpd-labwc
 LIGHTDM_CONF=/etc/lightdm/lightdm.conf
@@ -121,8 +96,10 @@ connected_output() {
 # Rewrites a kernel command line (stdin -> stdout) for a boot MODE. Every
 # token this script may have added is removed first, so modes switch cleanly.
 cmdline_for() {
-  local mode="$1" out=() word
-  read -r -a words
+  local mode="$1" out=() word words=()
+  # cmdline.txt has no trailing newline, so read reports EOF; the words are
+  # still read, so don't treat that as failure.
+  read -r -a words || true
   for word in "${words[@]}"; do
     case "$word" in
       quiet|splash|plymouth.ignore-serial-consoles|loglevel=3|logo.nologo|vt.global_cursor_default=0) ;;
@@ -139,6 +116,24 @@ cmdline_for() {
       ;;
   esac
   echo "${out[*]}"
+}
+
+# Rewrites the kernel command line FILE for a boot MODE. Computes the new line
+# first (never reading and writing the file in one pipeline), refuses to write
+# one that has lost the root= entry the Pi needs to boot, and replaces the
+# file in one copy. SUDO is overridable for tests.
+set_boot_cmdline() {
+  local file="$1" mode="$2" new tmp
+  new="$(cmdline_for "$mode" <"$file")"
+  if [[ "$new" != *root=* ]]; then
+    echo "refusing to change $file: the result has no root= entry" >&2
+    return 1
+  fi
+  tmp="$(mktemp)"
+  printf '%s
+' "$new" >"$tmp"
+  ${SUDO-sudo} cp "$tmp" "$file"
+  rm -f "$tmp"
 }
 
 # Writes a cursor theme whose every cursor is one transparent pixel, so the
@@ -169,6 +164,36 @@ with open(os.path.join(theme, "index.theme"), "w") as f:
     f.write("[Icon Theme]\nName=slate-blank\nComment=Invisible cursor for the Slate kiosk\n")
 PY
 }
+
+# Tests source this file for its functions; stop here when sourced.
+if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+  return 0
+fi
+
+URL=""
+ROTATE=""
+OUTPUT=""
+BOOT=""
+HIDE_CURSOR=1
+UPGRADE=1
+DESKTOP=0
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --url) URL="$2"; shift 2 ;;
+    --rotate) ROTATE="$2"; shift 2 ;;
+    --output) OUTPUT="$2"; shift 2 ;;
+    --boot) BOOT="$2"; shift 2 ;;
+    --text-boot) BOOT=text; shift ;; # older name for --boot text
+    --show-cursor) HIDE_CURSOR=0; shift ;;
+    --no-upgrade) UPGRADE=0; shift ;;
+    --desktop) DESKTOP=1; shift ;;
+    -h|--help) sed -n '2,26p' "$0"; exit 0 ;;
+    *) echo "unknown option: $1" >&2; exit 2 ;;
+  esac
+done
+
+[[ "$(id -u)" -ne 0 ]] || { echo "run as the desktop user, not root" >&2; exit 2; }
+command -v labwc >/dev/null || { echo "labwc not found: this script targets the Raspberry Pi OS labwc desktop" >&2; exit 1; }
 
 if [[ "$DESKTOP" -eq 1 ]]; then
   step "Logging into the normal desktop at boot again"
@@ -209,7 +234,7 @@ if [[ -n "$BOOT" ]]; then
   # Keep the originals once, before this script first changes them.
   [[ -f "$CMDLINE.before-slate" ]] || sudo cp "$CMDLINE" "$CMDLINE.before-slate"
   [[ -f "$CONFIG.before-slate" ]] || sudo cp "$CONFIG" "$CONFIG.before-slate"
-  cmdline_for "$BOOT" <"$CMDLINE" | sudo tee "$CMDLINE" >/dev/null
+  set_boot_cmdline "$CMDLINE" "$BOOT"
   sudo sed -i '/^disable_splash=/d' "$CONFIG"
   if [[ "$BOOT" == silent ]]; then
     # No rainbow firmware screen, no messages, logo or blinking cursor on the
