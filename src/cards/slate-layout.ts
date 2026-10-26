@@ -21,6 +21,8 @@ import { inWindow, parseTimeOfDay } from '../layout/night';
 import type { RowPlacement } from '../layout/screen';
 import { defaultPlacement, planScreen, rowsHeight } from '../layout/screen';
 import { scrimBackground } from '../layout/scrim';
+import type { InsetConfig } from '../layout/inset';
+import { resolveInset } from '../layout/inset';
 import './slate-background';
 import type { SlateBackground } from './slate-background';
 
@@ -47,6 +49,13 @@ export interface SlateLayoutConfig {
   scale?: number;
   /** Outer padding, px. */
   padding?: number;
+  /**
+   * Moves the content (clock, weather, calendar contents) in from the screen
+   * edges, px, for monitors that crop their edges; the photo and the docked
+   * calendar's black background still reach the edges. A number for all
+   * sides, or e.g. `{ left: 8, right: 8 }`.
+   */
+  inset?: InsetConfig;
   /** Space between the top rows and the bottom card, px. */
   gap?: number;
   /** `docked`: edge-to-edge calendar on black, photo above it. `floating`: card over a full-screen photo. */
@@ -149,6 +158,7 @@ export class SlateLayout extends LitElement {
   setConfig(config: SlateLayoutConfig): void {
     if (!config.top?.length && !config.bottom) throw new Error('slate-layout: add `top` rows and/or a `bottom` card');
     if (config.background) validateBackground(config.background);
+    resolveInset(config.inset); // throws on a bad inset
     if (config.scrim !== undefined && !(config.scrim >= 0 && config.scrim <= 1)) {
       throw new Error('slate-layout: `scrim` must be between 0 and 1');
     }
@@ -280,10 +290,11 @@ export class SlateLayout extends LitElement {
     const screen = root.querySelector('.screen') as HTMLElement | null;
     const group = root.querySelector('.top, .header') as HTMLElement | null;
     const pad = this._config?.padding ?? 16;
+    const inset = resolveInset(this._config?.inset);
     return {
       width: screen?.clientWidth ?? 0,
       // Docked, the calendar meets the screen edge: only the top is padded.
-      height: (screen?.clientHeight ?? 0) - (this._docked ? 1 : 2) * pad,
+      height: (screen?.clientHeight ?? 0) - (this._docked ? 1 : 2) * pad - inset.top - inset.bottom,
       rowHeights: this._rows.map(
         (_, i) => root.querySelector(`.row[data-index="${i}"]`)?.getBoundingClientRect().height ?? 0,
       ),
@@ -316,6 +327,7 @@ export class SlateLayout extends LitElement {
 
     // Scrim bands cover the text that's actually showing over the photo.
     const pad = this._config.padding ?? 16;
+    const inset = resolveInset(this._config.inset);
     const shown = rows.filter((r) => !(r.collapsible && plan.collapseTop));
     const groupHeight = (p: 'top' | 'stack') => {
       const g = shown.filter((r) => r.placement === p);
@@ -325,9 +337,9 @@ export class SlateLayout extends LitElement {
     const stack = groupHeight('stack');
     // Docked, the photo ends at the calendar; floating, it runs under the
     // calendar card to the screen's bottom edge.
-    const belowStack = this._docked ? 0 : pad + Math.min(m.bottomNatural, plan.bottomAvailable);
+    const belowStack = this._docked ? 0 : pad + inset.bottom + Math.min(m.bottomNatural, plan.bottomAvailable);
     this._scrim = scrimBackground({
-      top: header ? pad + header : 0,
+      top: header ? pad + inset.top + header : 0,
       bottom: stack ? belowStack + gap + stack : 0,
       strength: this._config.scrim ?? 0.2,
     });
@@ -354,7 +366,25 @@ export class SlateLayout extends LitElement {
     };
     const header = group('top', 'header');
     const top = group('stack', 'top');
-    const bottom = this._bottom ? html`<div class="bottom">${this._bottom}</div>` : nothing;
+    const inset = resolveInset(cfg.inset);
+    // Docked, the calendar's black runs edge to edge, so the inset goes inside
+    // it, onto its content. Floating, the card itself moves in (via .stack).
+    const bottom = this._bottom
+      ? html`<div
+          class="bottom"
+          style=${styleMap(
+            this._docked
+              ? {
+                  '--slate-calendar-inset-left': `${inset.left}px`,
+                  '--slate-calendar-inset-right': `${inset.right}px`,
+                  '--slate-calendar-inset-bottom': `${inset.bottom}px`,
+                }
+              : {},
+          )}
+        >
+          ${this._bottom}
+        </div>`
+      : nothing;
     const scrim = html`<div class="scrim" style=${styleMap({ backgroundImage: this._scrim })}></div>`;
     const body = this._docked
       ? html`<div class="photo">${this._background ?? nothing}${scrim}${header}${top}</div>
@@ -364,6 +394,10 @@ export class SlateLayout extends LitElement {
     return html`<div
       class=${classMap({ screen: true, docked: this._docked, floating: !this._docked })}
       style=${styleMap({
+        '--inset-top': `${inset.top}px`,
+        '--inset-right': `${inset.right}px`,
+        '--inset-bottom': `${inset.bottom}px`,
+        '--inset-left': `${inset.left}px`,
         '--slate-unit': this._unit ? `${this._unit}px` : null,
         '--slate-scale': String(cfg.scale ?? 1),
         '--pad': `${cfg.padding ?? 16}px`,
@@ -391,9 +425,9 @@ export class SlateLayout extends LitElement {
        bottom edge, over a full-screen photo. */
     .stack {
       position: absolute;
-      left: var(--pad);
-      right: var(--pad);
-      bottom: var(--pad);
+      left: calc(var(--pad) + var(--inset-left));
+      right: calc(var(--pad) + var(--inset-right));
+      bottom: calc(var(--pad) + var(--inset-bottom));
       display: flex;
       flex-direction: column;
       row-gap: var(--gap);
@@ -413,9 +447,9 @@ export class SlateLayout extends LitElement {
     /* Rows pinned to the top of the screen, over the photo. */
     .header {
       position: absolute;
-      top: var(--pad);
-      left: var(--pad);
-      right: var(--pad);
+      top: calc(var(--pad) + var(--inset-top));
+      left: calc(var(--pad) + var(--inset-left));
+      right: calc(var(--pad) + var(--inset-right));
     }
     /* Docked: the photo area takes whatever the calendar leaves; the top rows
        sit at its bottom edge, just above the calendar. */
@@ -432,8 +466,8 @@ export class SlateLayout extends LitElement {
     }
     .docked .top {
       position: absolute;
-      left: var(--pad);
-      right: var(--pad);
+      left: calc(var(--pad) + var(--inset-left));
+      right: calc(var(--pad) + var(--inset-right));
       bottom: var(--gap);
     }
     .docked .bottom {

@@ -361,7 +361,12 @@ export class SlateCalendar extends LitElement {
       box-sizing: border-box;
       /* Overridable: slate-layout tightens both when docked edge to edge. */
       --card-pad: var(--slate-calendar-padding, 1.5cqw);
-      padding: var(--card-pad);
+      /* slate-layout adds a content inset when docked (for monitors that crop
+         their edges); the background still reaches the edges. */
+      --pad-left: calc(var(--card-pad) + var(--slate-calendar-inset-left, 0px));
+      --pad-right: calc(var(--card-pad) + var(--slate-calendar-inset-right, 0px));
+      padding: var(--card-pad) var(--pad-right) calc(var(--card-pad) + var(--slate-calendar-inset-bottom, 0px))
+        var(--pad-left);
       background: var(--slate-panel-background, rgba(0, 0, 0, 0.45));
       backdrop-filter: blur(var(--slate-panel-blur, 4px));
       border-radius: var(--slate-panel-radius, 16px);
@@ -536,8 +541,8 @@ export class SlateCalendar extends LitElement {
       visibility: hidden;
       pointer-events: none;
       top: 0;
-      left: var(--card-pad);
-      right: var(--card-pad);
+      left: var(--pad-left);
+      right: var(--pad-right);
     }
     .probe-cell {
       grid-column: 1;

@@ -193,6 +193,16 @@ config-template-card) whose styling and portrait scaling couldn't be fixed well.
 - Default panels: `rgba(0,0,0,0.45)` with `blur(4px)` and a 16px radius, all
   configurable.
 
+### Content inset (decided 2026-10-26)
+- `inset` (a number for all sides, or `{ top, right, bottom, left }`, px)
+  moves the *content* in from the screen edges, for monitors that crop their
+  edges. The photo and the docked calendar's black background still reach the
+  edges. Docked, the inset is added inside the calendar's own padding (and
+  its hidden measuring copy, so wrapping and collapse stay exact); floating,
+  the whole card moves in. Top and bottom insets come out of the calendar's
+  available height. A first attempt inset the whole screen (photo and black
+  included), which wasn't what was wanted.
+
 ### Legibility over the photo (decided 2026-10-25)
 - No card or blur behind the clock and weather. Instead:
   - **Scrim:** a soft dark gradient on the photo, only in a band behind the

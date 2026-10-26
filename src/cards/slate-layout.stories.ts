@@ -21,6 +21,8 @@ interface Args {
   busy: number;
   bottom_style: 'docked' | 'floating';
   forecast_placement: 'top' | 'stack' | 'hidden';
+  /** Left/right content inset, px. */
+  inset_x: number;
 }
 
 function busyEvents(perDay: number) {
@@ -50,6 +52,7 @@ const meta: Meta<Args> = {
     busy: { control: { type: 'range', min: 0, max: 6 } },
     bottom_style: { control: 'inline-radio', options: ['docked', 'floating'] },
     forecast_placement: { control: 'inline-radio', options: ['top', 'stack', 'hidden'] },
+    inset_x: { control: { type: 'range', min: 0, max: 40, step: 1 } },
   },
   args: {
     weeks: 3,
@@ -59,6 +62,7 @@ const meta: Meta<Args> = {
     busy: 0,
     bottom_style: 'docked',
     forecast_placement: 'top',
+    inset_x: 0,
   },
   render: (args) => {
     const hass = createFakeHass({
@@ -75,6 +79,7 @@ const meta: Meta<Args> = {
       type: 'custom:slate-layout',
       scale: args.scale,
       bottom_style: args.bottom_style,
+      inset: { left: args.inset_x, right: args.inset_x },
       background: { urls: photos, interval: 0.25, fade_seconds: 3 },
       night: args.night
         ? { start: hhmm(new Date(now.getTime() - 3_600_000)), end: hhmm(new Date(now.getTime() + 3_600_000)), brightness: 0.35 }
@@ -107,3 +112,4 @@ export const Night: StoryObj<Args> = { args: { night: true, condition: 'clear-ni
 export const Floating: StoryObj<Args> = { args: { bottom_style: 'floating' } };
 export const ForecastStacked: StoryObj<Args> = { args: { forecast_placement: 'stack' } };
 export const ForecastHidden: StoryObj<Args> = { args: { forecast_placement: 'hidden' } };
+export const SideInset: StoryObj<Args> = { args: { inset_x: 8 } };

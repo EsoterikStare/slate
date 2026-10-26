@@ -159,6 +159,38 @@ describe('slate-layout', () => {
     expect(rows()[1]!.classList.contains('collapsed')).toBe(false);
   });
 
+  describe('content inset', () => {
+    const screenVar = (name: string) => root().querySelector<HTMLElement>('.screen')!.style.getPropertyValue(name);
+    const bottomVar = (name: string) => root().querySelector<HTMLElement>('.bottom')!.style.getPropertyValue(name);
+
+    it('is zero by default', async () => {
+      await mount();
+      expect(['--inset-top', '--inset-right', '--inset-bottom', '--inset-left'].map(screenVar)).toEqual([
+        '0px', '0px', '0px', '0px',
+      ]);
+    });
+
+    it('insets the content, passing the calendar its share when docked', async () => {
+      await mount(config({ inset: { left: 8, right: 8 } }));
+      expect(screenVar('--inset-left')).toBe('8px');
+      expect(screenVar('--inset-right')).toBe('8px');
+      // The docked calendar's background stays full-bleed: it insets its own content.
+      expect(bottomVar('--slate-calendar-inset-left')).toBe('8px');
+      expect(bottomVar('--slate-calendar-inset-right')).toBe('8px');
+    });
+
+    it('moves the whole floating card in instead of insetting inside it', async () => {
+      await mount(config({ bottom_style: 'floating', inset: 8 }));
+      expect(bottomVar('--slate-calendar-inset-left')).toBe('');
+    });
+
+    it('passes the top inset to the rows and the bottom inset to the docked calendar', async () => {
+      await mount(config({ inset: { top: 10, bottom: 6 } }));
+      expect(screenVar('--inset-top')).toBe('10px');
+      expect(bottomVar('--slate-calendar-inset-bottom')).toBe('6px');
+    });
+  });
+
   describe('legibility over the photo', () => {
     const scrim = () => root().querySelector<HTMLElement>('.scrim')!.style.backgroundImage;
     const screenVar = (name: string) => root().querySelector<HTMLElement>('.screen')!.style.getPropertyValue(name);
@@ -279,6 +311,7 @@ describe('slate-layout', () => {
     [{ background: {} }, /background/],
     [{ bottom_style: 'sideways' }, /bottom_style/],
     [{ scrim: 1.5 }, /scrim/],
+    [{ inset: { lft: 8 } }, /inset/],
     [{ top: [{ cards: [], placement: 'middle' }] }, /placement/],
   ])('rejects bad config %j', (bad, message) => {
     const l = document.createElement('slate-layout');
