@@ -188,6 +188,19 @@ resource when you're done, and never keep it alongside a HACS-installed copy
 (both would register the same card names). If a VPN is running on the dev PC,
 it may need LAN connections allowed.
 
+**Setting up a Raspberry Pi kiosk:** on a fresh Raspberry Pi OS (64-bit,
+desktop), copy `scripts/pi/setup-kiosk.sh` to the Pi and run it as the desktop
+user. It updates the system, enables automatic security updates, turns off
+screen blanking and Wi-Fi power saving, starts Chromium in kiosk mode on your
+dashboard at login (restarting it if it exits), and optionally rotates the
+screen, hides the cursor and shows text boot messages:
+
+```bash
+./setup-kiosk.sh --url "http://<ha-ip>:8123/<dashboard-path>" --rotate 90 --text-boot
+```
+
+Run `./setup-kiosk.sh --help` for all options.
+
 **A real build on the kiosk:** `pnpm deploy:dev` builds and copies the bundle
 to `\\homeassistant.local\config\www\slate` through the Samba share
 add-on (override with `SLATE_DEPLOY_DIR`), then prints the resource URL with a
