@@ -136,6 +136,30 @@ text: { event_title: 1.2, event_time: 0.9 }
 - **background:** `entity`, or `url` (with `interval` to re-fetch a random-image
   URL), or `urls` + `interval` (minutes) to rotate; `fade_seconds`.
 
+### Calendar changes are slow to appear?
+
+Slate asks Home Assistant for events every `refresh_interval` minutes
+(default 5), but it only sees what Home Assistant has synced. Calendars added
+from a share link (Remote Calendar integration, e.g. a public iCloud
+`webcal://` link) re-sync only **once a day**; CalDAV every 15 minutes. To
+pick up changes sooner, have an automation refresh them:
+
+```yaml
+- alias: Refresh shared calendars
+  triggers:
+    - trigger: time_pattern
+      minutes: "/10"
+  actions:
+    - action: homeassistant.update_entity
+      target:
+        entity_id:
+          - calendar.alex
+          - calendar.family
+```
+
+List your own calendar entities. Every 10 minutes is gentle on the calendar
+host. Run the automation by hand (⋮ → Run actions) to test it right away.
+
 ## Kiosk (Raspberry Pi)
 
 Let the Pi in without a login prompt, and only the Pi. In `configuration.yaml`
