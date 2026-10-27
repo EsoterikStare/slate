@@ -360,6 +360,19 @@ cards:
   trailing newline. `set_boot_cmdline` now validates (`root=` must survive)
   and has regression tests.
 
+### Setup documentation (decided 2026-10-27)
+- Two setup guides cover the same steps: `docs/setup.md` for people (UI
+  walkthroughs, a check after each step) and `docs/setup-for-agents.md` for
+  AI assistants helping someone (facts to collect, ground rules, the full
+  option reference with defaults, the exact error messages, a symptom →
+  cause table). `llms.txt` at the root points agents at it. The README
+  keeps the overview and a fuller example.
+- The agent guide's ground rules: never guess entity IDs, never take secrets
+  in chat, ask before changing `configuration.yaml` or restarting, verify
+  each step.
+- When options, defaults or error messages change, update the agent guide's
+  reference in the same change.
+
 ## Open questions
 - How time-zone and DST edge cases look in multi-day bars. Settle during
   implementation, with tests.

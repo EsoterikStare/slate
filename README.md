@@ -13,6 +13,10 @@ card over a full-screen photo.)
 | `custom:slate-clock` | Large time and date |
 | `custom:slate-weather` | Current conditions and/or a daily forecast strip, with animated icons |
 
+**New here?** [docs/setup.md](docs/setup.md) walks through the whole thing,
+from installing to a Raspberry Pi on the wall. Setting up with an AI
+assistant? Give it [docs/setup-for-agents.md](docs/setup-for-agents.md).
+
 Design decisions and their reasons are in [PLANNING.md](PLANNING.md).
 
 ## Install

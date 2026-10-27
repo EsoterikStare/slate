@@ -1,0 +1,13 @@
+# Slate
+
+> Custom Home Assistant dashboard cards (Lit + TypeScript) for a portrait, wall-mounted, display-only kiosk: a week-row calendar, clock, weather and a rotating photo background. Installed through HACS / the Home Assistant Marketplace as a Dashboard repository.
+
+## Setting Slate up for a user
+
+- [Setup guide for AI agents](https://github.com/EsoterikStare/slate/blob/main/docs/setup-for-agents.md): procedure, facts to collect, full option reference with defaults, error messages and diagnosis
+- [Setup guide for people](https://github.com/EsoterikStare/slate/blob/main/docs/setup.md): the same steps with Home Assistant UI walkthroughs
+
+## Working on the code
+
+- [CLAUDE.md](https://github.com/EsoterikStare/slate/blob/main/CLAUDE.md): commands, privacy rules and testing conventions
+- [PLANNING.md](https://github.com/EsoterikStare/slate/blob/main/PLANNING.md): every design decision and why
