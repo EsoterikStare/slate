@@ -88,19 +88,18 @@ Pick one:
   rest:
     - resource: https://api.unsplash.com/photos/random
       params:
-        orientation: portrait
+        client_id: !secret unsplash_key
         query: landscape                  # what kind of photos
-      headers:
-        Authorization: !secret unsplash_auth
+        orientation: portrait
       scan_interval: 1800
       sensor:
         - name: Unsplash background
           value_template: "{{ value_json.id }}"
-          picture: >-
-            {{ value_json.urls.raw }}&w=1080&h=1920&fit=crop&crop=entropy&q=85&auto=format
+          picture: "{{ value_json.urls.raw }}&w=1080&h=1920&fit=crop&crop=entropy&q=85&auto=format"
   ```
 
-  and in `secrets.yaml`: `unsplash_auth: "Client-ID <your access key>"`.
+  and in `secrets.yaml`, next to `configuration.yaml` (Home Assistant reads
+  it automatically; no `!include` needed): `unsplash_key: <your access key>`.
   For a 4K screen, add `&dpr=2` to the end of the `picture` line. Restart
   Home Assistant, and `sensor.unsplash_background` appears.
 
